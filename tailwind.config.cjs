@@ -5,16 +5,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        brown: {
-          500: '#332727',
+        neon: {
+          'pink': '#cc0c39',
+          'orange': '#e6781e',
+          'yellow': '#c8cf02',
+          'beige': '#f8fcc1',
+          'blue': '#1693a7',
         },
-        flag: {
-          'green': '#008A44',
-          'red': '#CB212B',
+        baby: {
+          'pink': '#f04155',
+          'orange': '#ff823a',
+          'yellow': '#f2f26f',
+          'beige': '#fff7bd',
+          'blue': '#95cfb7',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        roboto: ['Roboto', 'sans-serif'],
       },
     },
   },

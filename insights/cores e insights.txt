@@ -1,6 +1,0 @@
-Bandeira Itália
-Verde: #008A44
-Vermelho: #CB212B
-
-Background
-Marrom (background página inteira): #332727
