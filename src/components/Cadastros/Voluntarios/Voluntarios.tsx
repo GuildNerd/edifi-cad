@@ -160,7 +160,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                 loadDefaultVoluntarios();
                 setOpenPopup(false);
                 // Mostrar uma mensagem de sucesso na tela
-                // Implemente a lógica para exibir a mensagem de sucesso aqui
+                // TODO: Pendente implementar a lógica para exibir a mensagem de sucesso aqui
             } else {
                 throw new Error(`${response.status} ${response.statusText}`);
             }
@@ -169,6 +169,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
         }
     };
 
+    // editando voluntário
     const handleEditVoluntario = async (id: number) => {
         try {
             let response = await fetch(`${URL}${id}`, {
@@ -191,7 +192,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
         }
     };
 
-    //editar voluntário
+
     const handleUpdateVoluntario = async () => {
         try {
             const response = await fetch(`${URL}`, {
@@ -215,6 +216,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
         }
     };
 
+    // removendo voluntario
     const handleDeleteVoluntario = (voluntario: Voluntario) => {
         setVoluntarioToDelete(voluntario);
         setConfirmDelete(true);
@@ -247,8 +249,6 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
             }
         }
     };
-
-
 
     useEffect(() => {
         if(isLoadDefault)
@@ -420,7 +420,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                 <table className='rounded-sm bg-white'>
                     <thead>
                         <tr className='text-center'>
-                            <th></th> {/* Coluna para o ícone de lápis */}
+                            <th></th>
                             <th className='px-2'>CPF</th>
                             <th className='px-2'>Nome</th>
                             <th className='px-2'>Telefone</th>
