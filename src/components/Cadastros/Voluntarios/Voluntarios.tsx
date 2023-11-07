@@ -169,27 +169,9 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
     };
 
     // editando voluntário
-    //TODO: avaliar se é necessário fazer uma chamada para obter o voluntário novamente. Não pode usar o objeto da lista???
-    const handleEditVoluntario = async (id: number) => {
-        try {
-            let response = await fetch(`${URL}${id}`, {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    Authorization: APIToken,
-                },
-            });
-
-            if (response.ok) {
-                let data: Voluntario = await response.json();
-                setNovoVoluntario(data);
-                setOpenPopup(true);
-            } else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            console.error('Erro ao buscar voluntário para edição:', error);
-        }
+    const handleEditVoluntario = (voluntario: Voluntario) => {
+        setNovoVoluntario(voluntario);
+        setOpenPopup(true);
     };
 
 
@@ -423,7 +405,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                             voluntariosList.map((voluntario, index) =>
                                 <tr className='text-sm' key={index}>
                                     <td className='px-2 border-[1px] border-gray-600'>
-                                        <button onClick={() => handleEditVoluntario(voluntario.id)}>
+                                        <button onClick={() => handleEditVoluntario(voluntario)}>
                                             <EditIcon className='text-baby-blue'></EditIcon>
                                         </button>
 
