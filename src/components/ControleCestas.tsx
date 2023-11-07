@@ -1,14 +1,79 @@
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Popup from 'reactjs-popup';
+import Autocomplete from '@mui/material/Autocomplete';
 
-import { useState } from 'react';
+import 'reactjs-popup/dist/index.css';
 
-type ControleCesta = {
+import 'reactjs-popup/dist/index.css';
+import { Grid, TextField, Button } from '@mui/material';
+import { useState, useEffect } from 'react';
+import Cestas from './Cadastros/Cestas/Cestas';
+
+
+type DistribuicaoCesta = {
+    id:number,
+    data_hora: Date,
+    cesta : {
+        id : number,
+        nome : string
+    },
+    voluntario : {
+        id : number,
+        nome : string,
+        cpf : string
+    },
+    beneficiario :{
+        id : number,
+        nome : string,
+        cpf : string
+    }
+}
+
+type Beneficiario = {
+    id: number ,
+    nome: string,
+    email?: string,
+    cpf: string,
+    telefone?: string,
+    data_nascimento: string,
+    endereco?: {
+        id: number ,
+        logradouro: string,
+        numero: string,
+        cep: string,
+        bairro: string,
+        cidade: string,
+        estado: string
+    },
+    dependentes: [{
+        id: number,
+        nome: string,
+        email?: string,
+        cpf: string,
+        telefone?: string,
+        data_nascimento: string
+    }];
+}
+
+type Cesta = {
     id: number,
-    cesta: string,
-    recebido_por: string,
-    voluntario_responsavel: string,
-    data_hora: Date
+    nome: string,
+    descricao: string,
+    quantidade_estoque: number,
+}
+
+
+
+type DistribuicaoFormData = {
+    data_hora: Date,
+    id_cesta : number,
+    id_voluntario : number,
+    id_beneficiario : number
 }
 
 interface ControleCestasProps {
@@ -17,34 +82,39 @@ interface ControleCestasProps {
 
 export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [inputContent, setInputContent] = useState("");
-    let controleCestasList: ControleCesta[] = [{
-        id: 1,
-        cesta: "Cesta básica",
-        recebido_por: "João da Silva Santos",
-        voluntario_responsavel: "Fernanda Dandara Pereira",
-        data_hora: new Date("10/31/2023, 07:55")
-    },
-    {
-        id: 2,
-        cesta: "Cesta junina",
-        recebido_por: "Tomas de Aquino",
-        voluntario_responsavel: "Tamara Dias Ximenes",
-        data_hora: new Date("10/25/2023, 16:16")
-    },
-    {
-        id: 3,
-        cesta: "Cesta natal",
-        recebido_por: "Paula Matos",
-        voluntario_responsavel: "Daniel Gomes",
-        data_hora: new Date("10/12/2023, 20:34")
-    },
-    {
-        id: 4,
-        cesta: "Cesta XG",
-        recebido_por: "João da Silva Santos",
-        voluntario_responsavel: "Fernanda Dandara Pereira",
-        data_hora: new Date("11/05/2022, 11:20")
-    }];
+    const [isLoadDefault, setIsLoadDefault] = useState(true);
+    const [controleCestasList, setControleCestaList] = useState<DistribuicaoCesta[]>([]);
+    const [cestaOptions, setCestaOptions] = useState<Cesta[]>([]);
+    const [beneficiarioOptions, setBeneficiarioOptions] = useState<Beneficiario[]>([]);
+    const [openPopup, setOpenPopup] = useState(false);
+    const [formData, setFormData] = useState<DistribuicaoFormData>({
+        id_cesta: 0,
+        id_beneficiario: 0,
+        id_voluntario: 0,
+        data_hora: new Date()
+    });
+
+    async function loadDefaultDistribuicaoCesta() {
+        try {
+            let response = await fetch(`https://edificad-production.up.railway.app/api/distribuicao-cesta`, {
+                method: "GET",
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                }
+            })
+            if (response.ok) {
+                let data: DistribuicaoCesta[] = await response.json();
+                setControleCestaList(data);
+            }
+            else
+                throw new Error(`${response.status} ${response.statusText}`);
+        }
+
+        catch (error) {
+
+        }
+    }
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
         setInputContent(event.currentTarget.value);
@@ -68,13 +138,114 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         }
     };
 
+    useEffect(() => {
+        if (isLoadDefault)
+            loadDefaultDistribuicaoCesta();
+    }, [isLoadDefault])
+
+
+    const handleFormSubmit = async () => {
+        const dataToSend = {
+            cesta: { id: formData.id_cesta },
+            voluntario: { id: formData.id_voluntario },
+            beneficiario: { id: formData.id_beneficiario},
+            data_hora: formData.data_hora.toISOString()
+        };
+    
+        try {
+            const response = await fetch('https://edificad-production.up.railway.app/api/distribuicao-cesta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    Authorization: APIToken
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            if (response.ok) {
+                //handleClosePopup();
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao enviar a solicitação:', error);
+        }
+    };
+
+    const handleOpenPopup = () => {
+        setOpenPopup(true);
+        loadCestaOptions();
+        loadBeneficiarioOptions();
+    };
+
+    const handleClosePopup = () => {
+        setOpenPopup(false);
+    };
+
+  
+    async function loadCestaOptions() {
+        try {
+            let response = await fetch(`https://edificad-production.up.railway.app/api/cesta`, {
+                method: "GET",
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                }
+            });
+            if (response.ok) {
+                let data = await response.json();
+                console.log(data)
+                setCestaOptions(data);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar opções de cesta:', error);
+        }
+    }
+    
+    const handleCestaChange = (event: React.ChangeEvent<{}>, value: Cesta | null) => {
+        if (value) {
+            console.log(value)
+            setFormData({ ...formData, id_cesta: value.id });
+        }
+    };
+
+
+    async function loadBeneficiarioOptions() {
+        try {
+            let response = await fetch(`https://edificad-production.up.railway.app/api/beneficiario`, {
+                method: "GET",
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                }
+            });
+            if (response.ok) {
+                let data = await response.json();
+                setBeneficiarioOptions(data);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar opções de cesta:', error);
+        }
+    }
+    
+    const handleBeneficiarioChange = (event: React.ChangeEvent<{}>, value: Beneficiario | null) => {
+        if (value) {
+            setFormData({ ...formData, id_beneficiario: value.id });
+        }
+    };
+
+
     return (
         <div className='h-[100vh] flex flex-col items-center bg-white'>
             <h1 className='my-8 text-gray-800 text-3xl'>Controle de distribuição de cestas</h1>
             <div className='my-4 ml-8 self-start'>
                 <h3 className='text-gray-800 text-xl'>Dados do último mês</h3>
                 <div className='flex justify-center gap-16 text-gray-800'>
-                    <p>Cestas distribuídas: 35</p>
+                    <p>Cestas distribuídas: {controleCestasList.length}</p>
                     <p>Beneficiários assistidos: 28</p>
                 </div>
             </div>
@@ -87,10 +258,63 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                     </button>
                 </div>
                 <div>
-                    <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-blue border-2 border-neon-blue text-white'>
+                    <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-blue border-2 border-neon-blue text-white'
+                        onClick={handleOpenPopup}>
                         <AddIcon></AddIcon>
                         Novo registro
                     </button>
+
+                <Popup open={openPopup} onClose={handleClosePopup}>
+                    <div className='p-4'>
+                        <h1 className='text-center'>Novo Registro</h1>
+                        <form>
+                            <div className='mt-2'>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <Autocomplete
+                                            id="cesta-autocomplete"
+                                            options={cestaOptions}
+                                            getOptionLabel={(option) => option.nome}
+                                            onChange={handleCestaChange}
+                                            renderInput={(params) => <TextField {...params} label="Cesta" />}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Autocomplete
+                                            id="beneficiario-autocomplete"
+                                            options={beneficiarioOptions}
+                                            getOptionLabel={(option) => option.nome}
+                                            onChange={handleBeneficiarioChange}
+                                            renderInput={(params) => <TextField {...params} label="Beneficiário" />}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            id="data_hora"
+                                            label="Registro"
+                                            type="datetime-local"
+                                            defaultValue={formData.data_hora.toISOString().slice(0, 16)}
+                                            InputLabelProps={{
+                                                shrink: true,
+                                            }}
+                                            onChange={(e) => setFormData({ ...formData, data_hora: new Date(e.target.value) })}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </div>
+                            <div className='mt-5 flex justify-around'>
+                                <Button variant='contained' onClick={handleFormSubmit }>
+                                    Cadastrar
+                                </Button>
+                                <Button variant='contained' className='!bg-red-500' onClick={handleClosePopup}>
+                                    Cancelar
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </Popup>
+
+
                 </div>
             </div>
             <div className='mt-4'>
@@ -99,14 +323,14 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                         <th className='px-2'>Cesta</th>
                         <th className='px-2'>Recebido por</th>
                         <th className='px-2'>Voluntário responsável</th>
-                        <th className='px-2'>Data e hora da entrega</th>
+                        <th className='px-2'>Entrega</th>
                     </tr>
                     {
                         controleCestasList.map((controle, index) =>
                             <tr className='text-sm'>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.cesta}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.recebido_por}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.voluntario_responsavel}</td>
+                                <td className='px-2 border-[1px] border-gray-600'>{controle.cesta.nome}</td>
+                                <td className='px-2 border-[1px] border-gray-600'>{controle.beneficiario.nome}</td>
+                                <td className='px-2 border-[1px] border-gray-600'>{controle.voluntario.nome}</td>
                                 <td className='px-2 border-[1px] border-gray-600'>{controle.data_hora.toLocaleString("pt-BR")}</td>
                             </tr>
                         )
