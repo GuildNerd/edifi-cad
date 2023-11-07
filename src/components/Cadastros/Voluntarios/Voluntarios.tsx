@@ -8,7 +8,7 @@ import 'reactjs-popup/dist/index.css';
 import { Grid, TextField, Button } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-const URL = "https://edificad-production.up.railway.app/api/voluntario/";
+const URL = "https://edificad-production.up.railway.app/api/voluntario";
 
 type Voluntario = {
     id: number | null,
@@ -58,7 +58,22 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
     const [voluntarioToDelete, setVoluntarioToDelete] = useState<Partial<Voluntario>>({});
 
     const [openPopup, setOpenPopup] = useState(false);
-    const [novoVoluntario, setNovoVoluntario] = useState<Partial<Voluntario>>({});
+    const [openPopupUpdate, setOpenPopupUpdate] = useState(false);
+    const [novoVoluntario, setNovoVoluntario] = useState({
+        nome: "",
+        email: "",
+        cpf: "",
+        telefone: "",
+        endereco: {
+            id: null,
+            logradouro: "",
+            numero: "",
+            cep: "",
+            bairro: "",
+            cidade: "",
+            estado: "",
+        },
+    });
 
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -138,8 +153,16 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
 
     const handleClosePopup = () => {
         setOpenPopup(false);
-        //setNovoVoluntario(emptyVoluntario);
+        setNovoVoluntario(emptyVoluntario);
     };
+
+    const handleOpenPopupUpdate = () => {
+        setOpenPopupUpdate(true);
+    };
+
+    const handleClosePopupUpdate = () => {
+        setOpenPopupUpdate(false);
+    }
 
 
     // adicionar voluntário
@@ -169,15 +192,13 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
     };
 
     // editando voluntário
-    const handleEditVoluntario = (voluntario: Voluntario) => {
+    const handleEditVoluntario = (voluntario) => {
         setNovoVoluntario(voluntario);
-        setOpenPopup(true);
+        setOpenPopupUpdate(true);
     };
 
 
     const handleUpdateVoluntario = async () => {
-        console.log("Estou aqui caralho")
-        console.log(novoVoluntario)
         try {
             const response = await fetch(`${URL}`, {
                 method: 'PUT',
@@ -191,9 +212,8 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
 
             if (response.ok) {
                 loadDefaultVoluntarios();
-                setOpenPopup(false);
+                setOpenPopupUpdate(false);
             } else {
-                console.log(response)
                 throw new Error(`${response.status} ${response.statusText}`);
             }
         } catch (error) {
@@ -269,7 +289,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                     </button>
                     <Popup open={openPopup} onClose={handleClosePopup}>
                         <div className='p-4'>
-                            <h1 className='text-center'>{novoVoluntario.id ? 'Editando Voluntário' : 'Cadastrando Voluntário'}</h1>
+                            <h1 className='text-center'>Cadastrando Voluntário</h1>
                             <form >
                                 <div className='mt-2'>
                                     <h3 className='my-2'>Dados Pessoais</h3>
@@ -356,17 +376,9 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                                     </Grid>
                                 </div>
                                 <div className='mt-5 flex justify-around'>
-                                    {novoVoluntario.id ?
-                                        (
-                                            <Button variant='contained' onClick={handleUpdateVoluntario}>
-                                                Confirmar
-                                            </Button>
-                                        ) :
-                                        (
-                                            <Button variant='contained' onClick={handleAddVoluntario}>
-                                                Cadastrar
-                                            </Button>
-                                        )}
+                                    <Button variant='contained' onClick={handleAddVoluntario}>
+                                        Cadastrar
+                                    </Button>
                                     <Button variant='contained' onClick={handleClosePopup} className='!bg-red-500'>
                                         Cancelar
                                     </Button>
@@ -411,7 +423,105 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                                         <button onClick={() => handleEditVoluntario(voluntario)}>
                                             <EditIcon className='text-baby-blue'></EditIcon>
                                         </button>
-
+                                        <Popup open={openPopupUpdate}>
+                                            <div className='p-4'>
+                                                <h1 className='text-center'>Editando Voluntário</h1>
+                                                <form >
+                                                    <div className='mt-2'>
+                                                        <h3 className='my-2'>Dados Pessoais</h3>
+                                                        <Grid container spacing={2}>
+                                                            <Grid item xs={6}>
+                                                                <TextField
+                                                                    label="Nome"
+                                                                    value={novoVoluntario.nome}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, nome: e.target.value })}
+                                                                    fullWidth
+                                                                />
+                                                                <TextField
+                                                                    label="Email"
+                                                                    value={novoVoluntario.email}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, email: e.target.value })}
+                                                                    fullWidth
+                                                                    style={{ marginTop: '16px' }}
+                                                                />
+                                                            </Grid>
+                                                            <Grid item xs={6}>
+                                                                <TextField
+                                                                    label="Telefone"
+                                                                    value={novoVoluntario.telefone}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, telefone: e.target.value })}
+                                                                    fullWidth
+                                                                />
+                                                                <TextField
+                                                                    label="CPF"
+                                                                    value={novoVoluntario.cpf}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, cpf: e.target.value })}
+                                                                    fullWidth
+                                                                    style={{ marginTop: '16px' }}
+                                                                />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </div>
+                                                    <div className='mt-4'>
+                                                        <h3 className='my-2'>Endereço</h3>
+                                                        <Grid container spacing={2}>
+                                                            <Grid item xs={6}>
+                                                                <TextField
+                                                                    label="Logradouro"
+                                                                    value={novoVoluntario.endereco?.logradouro || ''}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, logradouro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                                    fullWidth
+                                                                />
+                                                                <TextField
+                                                                    label="Número"
+                                                                    value={novoVoluntario.endereco?.numero || ''}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, numero: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                                    fullWidth
+                                                                    style={{ marginTop: '16px' }}
+                                                                />
+                                                                <TextField
+                                                                    label="CEP"
+                                                                    value={novoVoluntario.endereco?.cep || ''}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, cep: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                                    fullWidth
+                                                                    style={{ marginTop: '16px' }}
+                                                                />
+                                                            </Grid>
+                                                            <Grid item xs={6}>
+                                                                <TextField
+                                                                    label="Bairro"
+                                                                    value={novoVoluntario.endereco?.bairro || ''}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, bairro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                                    fullWidth
+                                                                />
+                                                                <TextField
+                                                                    label="Cidade"
+                                                                    value={novoVoluntario.endereco?.cidade || ''}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, cidade: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                                    fullWidth
+                                                                    style={{ marginTop: '16px' }}
+                                                                />
+                                                                <TextField
+                                                                    label="Estado"
+                                                                    value={novoVoluntario.endereco?.estado || ''}
+                                                                    onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, estado: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                                    fullWidth
+                                                                    style={{ marginTop: '16px' }}
+                                                                />
+                                                            </Grid>
+                                                        </Grid>
+                                                    </div>
+                                                    <div className='mt-5 flex justify-around'>
+                                                        <Button variant='contained' onClick={handleUpdateVoluntario}>
+                                                            Confirmar
+                                                        </Button>
+                                                        <Button variant='contained' onClick={handleClosePopupUpdate} className='!bg-red-500'>
+                                                            Cancelar
+                                                        </Button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </Popup>
                                         <button onClick={() => handleDeleteVoluntario(voluntario)}>
                                             <DeleteIcon className='text-red-500'></DeleteIcon>
                                         </button>

@@ -320,20 +320,20 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
                                             <TextField
                                                 label="Logradouro"
                                                 value={novoBeneficiario.endereco?.logradouro || ''}
-                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, logradouro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, logradouro: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
                                                 fullWidth
                                             />
                                             <TextField
                                                 label="Número"
                                                 value={novoBeneficiario.endereco?.numero || ''}
-                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, numero: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, numero: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
                                                 fullWidth
                                                 style={{ marginTop: '16px' }}
                                             />
                                             <TextField
                                                 label="CEP"
                                                 value={novoBeneficiario.endereco?.cep || ''}
-                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, cep: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, cep: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
                                                 fullWidth
                                                 style={{ marginTop: '16px' }}
                                             />
@@ -342,20 +342,20 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
                                             <TextField
                                                 label="Bairro"
                                                 value={novoBeneficiario.endereco?.bairro || ''}
-                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, bairro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, bairro: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
                                                 fullWidth
                                             />
                                             <TextField
                                                 label="Cidade"
                                                 value={novoBeneficiario.endereco?.cidade || ''}
-                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, cidade: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, cidade: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
                                                 fullWidth
                                                 style={{ marginTop: '16px' }}
                                             />
                                             <TextField
                                                 label="Estado"
                                                 value={novoBeneficiario.endereco?.estado || ''}
-                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, estado: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                                onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, estado: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
                                                 fullWidth
                                                 style={{ marginTop: '16px' }}
                                             />
