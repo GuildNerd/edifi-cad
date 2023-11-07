@@ -138,7 +138,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
 
     const handleClosePopup = () => {
         setOpenPopup(false);
-        setNovoVoluntario(emptyVoluntario);
+        //setNovoVoluntario(emptyVoluntario);
     };
 
 
@@ -176,6 +176,8 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
 
 
     const handleUpdateVoluntario = async () => {
+        console.log("Estou aqui caralho")
+        console.log(novoVoluntario)
         try {
             const response = await fetch(`${URL}`, {
                 method: 'PUT',
@@ -191,6 +193,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                 loadDefaultVoluntarios();
                 setOpenPopup(false);
             } else {
+                console.log(response)
                 throw new Error(`${response.status} ${response.statusText}`);
             }
         } catch (error) {
