@@ -1,10 +1,14 @@
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
 import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 import { Grid, TextField, Button } from '@mui/material';
 import { useState, useEffect } from 'react';
+
+const URL = "https://edificad-production.up.railway.app/api/voluntario/";
 
 type Voluntario = {
     id: number | null,
@@ -23,6 +27,24 @@ type Voluntario = {
     }
 }
 
+let emptyVoluntario = {
+    id: null,
+    nome: "",
+    email: "",
+    cpf: "",
+    telefone: "",
+    endereco: {
+        id: null,
+        logradouro: "",
+        numero: "",
+        cep: "",
+        bairro: "",
+        cidade: "",
+        estado: "",
+    },
+};
+
+
 interface VoluntariosProps {
     APIToken: string
 }
@@ -32,9 +54,12 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
     const [searchingAttribute, setSearchingAttribute] = useState("cpf");
     const [isLoadDefault, setIsLoadDefault] = useState(true);
     const [voluntariosList, setVoluntariosList] = useState<Voluntario[]>([]);
-
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [voluntarioToDelete, setVoluntarioToDelete] = useState<Partial<Voluntario>>({});
+    
     const [openPopup, setOpenPopup] = useState(false);
     const [novoVoluntario, setNovoVoluntario] = useState<Partial<Voluntario>>({});
+
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
         setInputContent(event.currentTarget.value);
@@ -113,27 +138,15 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
 
     const handleClosePopup = () => {
         setOpenPopup(false);
-        setNovoVoluntario({
-            id: null,
-            nome: "",
-            email: "",
-            cpf: "",
-            telefone: "",
-            endereco: {
-                id: null,
-                logradouro: "",
-                numero: "",
-                cep: "",
-                bairro: "",
-                cidade: "",
-                estado: "",
-            },
-        });
+        setNovoVoluntario(emptyVoluntario);
     };
 
+
+    
+    // adicionar voluntário
     const handleAddVoluntario = async () => {
         try {
-            const response = await fetch(`https://edificad-production.up.railway.app/api/voluntario`, {
+            const response = await fetch(`${URL}`, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
@@ -155,6 +168,86 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
             console.error('Erro ao cadastrar novo voluntário:', error);
         }
     };
+
+    const handleEditVoluntario = async (id: number) => {
+        try {
+            let response = await fetch(`${URL}${id}`, {
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                },
+            });
+
+            if (response.ok) {
+                let data: Voluntario = await response.json();
+                setNovoVoluntario(data); 
+                setOpenPopup(true);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar voluntário para edição:', error);
+        }
+    };
+
+    //editar voluntário
+    const handleUpdateVoluntario = async () => {
+        try {
+            const response = await fetch(`${URL}`, {
+                method: 'PUT',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    Authorization: APIToken,
+                },
+                body: JSON.stringify(novoVoluntario),
+            });
+
+            if (response.ok) {
+                loadDefaultVoluntarios();
+                setOpenPopup(false);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao atualizar voluntário:', error);
+        }
+    };
+
+    const handleDeleteVoluntario = (voluntario: Voluntario) => {
+        setVoluntarioToDelete(voluntario);
+        setConfirmDelete(true);
+    };
+
+    const handleCancelDelete = () => {
+        setConfirmDelete(false);
+        setVoluntarioToDelete(emptyVoluntario);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (voluntarioToDelete) {
+            try {
+            const response = await fetch(`${URL}${voluntarioToDelete.id}`, {
+                method: 'DELETE',
+                headers: {
+                Accept: 'application/json',
+                Authorization: APIToken,
+                },
+            });
+        
+            if (response.ok) {
+                loadDefaultVoluntarios();
+                setConfirmDelete(false);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+            } catch (error) {
+            console.error('Erro ao excluir voluntário:', error);
+            }
+        }
+    };
+
 
 
     useEffect(() => {
@@ -191,104 +284,129 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                     </button>
                     <Popup open={openPopup} onClose={handleClosePopup}>
                     <div className='p-4'>
-                        <h1>Cadastrar Novo Voluntário</h1>
+                    <h1>{novoVoluntario.id ? 'Editando Voluntário' : 'Cadastrando Voluntário'}</h1>
                         <form >
                         <div>
-                <h3>Dados Pessoais</h3>
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Nome"
-                            value={novoVoluntario.nome}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, nome: e.target.value })}
-                            fullWidth
-                        />
-                        <TextField
-                            label="Email"
-                            value={novoVoluntario.email}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, email: e.target.value })}
-                            fullWidth
-                            style={{ marginTop: '16px' }}
-                        />
-                        <TextField
-                            label="CPF"
-                            value={novoVoluntario.cpf}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, cpf: e.target.value })}
-                            fullWidth
-                            style={{ marginTop: '16px' }}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Telefone"
-                            value={novoVoluntario.telefone}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, telefone: e.target.value })}
-                            fullWidth
-                           
-                        />
-                    </Grid>
-                </Grid>
-            </div>
-            <div>
-                <h3>Endereço</h3>
-                <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Logradouro"
-                            value={novoVoluntario.endereco?.logradouro || ''}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, logradouro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
-                            fullWidth
-                        />
-                        <TextField
-                            label="Número"
-                            value={novoVoluntario.endereco?.numero || ''}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, numero: e.target.value, id: novoVoluntario.endereco?.id || null } })}
-                            fullWidth
-                            style={{ marginTop: '16px' }}
-                        />
-                        <TextField
-                            label="CEP"
-                            value={novoVoluntario.endereco?.cep || ''}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, cep: e.target.value, id: novoVoluntario.endereco?.id || null } })}
-                            fullWidth
-                            style={{ marginTop: '16px' }}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField
-                            label="Bairro"
-                            value={novoVoluntario.endereco?.bairro || ''}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, bairro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
-                            fullWidth
-                        />
-                        <TextField
-                            label="Cidade"
-                            value={novoVoluntario.endereco?.cidade || ''}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, cidade: e.target.value, id: novoVoluntario.endereco?.id || null } })}
-                            fullWidth
-                            style={{ marginTop: '16px' }}
-                        />
-                        <TextField
-                            label="Estado"
-                            value={novoVoluntario.endereco?.estado || ''}
-                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, estado: e.target.value, id: novoVoluntario.endereco?.id || null } })}
-                            fullWidth
-                            style={{ marginTop: '16px' }}
-                        />
-                    </Grid>
-                </Grid>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                <Button variant='contained' onClick={handleAddVoluntario}>
-                    Cadastrar
-                </Button>
-                <Button variant='contained' onClick={handleClosePopup}>
-                    Cancelar
-                </Button>
-            </div>
+                                <h3>Dados Pessoais</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            label="Nome"
+                                            value={novoVoluntario.nome}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, nome: e.target.value })}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Email"
+                                            value={novoVoluntario.email}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, email: e.target.value })}
+                                            fullWidth
+                                            style={{ marginTop: '16px' }}
+                                        />
+                                        <TextField
+                                            label="CPF"
+                                            value={novoVoluntario.cpf}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, cpf: e.target.value })}
+                                            fullWidth
+                                            style={{ marginTop: '16px' }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            label="Telefone"
+                                            value={novoVoluntario.telefone}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, telefone: e.target.value })}
+                                            fullWidth
+                                        
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </div>
+                            <div>
+                                <h3>Endereço</h3>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            label="Logradouro"
+                                            value={novoVoluntario.endereco?.logradouro || ''}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, logradouro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Número"
+                                            value={novoVoluntario.endereco?.numero || ''}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, numero: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                            fullWidth
+                                            style={{ marginTop: '16px' }}
+                                        />
+                                        <TextField
+                                            label="CEP"
+                                            value={novoVoluntario.endereco?.cep || ''}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, cep: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                            fullWidth
+                                            style={{ marginTop: '16px' }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            label="Bairro"
+                                            value={novoVoluntario.endereco?.bairro || ''}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, bairro: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Cidade"
+                                            value={novoVoluntario.endereco?.cidade || ''}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, cidade: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                            fullWidth
+                                            style={{ marginTop: '16px' }}
+                                        />
+                                        <TextField
+                                            label="Estado"
+                                            value={novoVoluntario.endereco?.estado || ''}
+                                            onChange={(e) => setNovoVoluntario({ ...novoVoluntario, endereco: { ...novoVoluntario.endereco, estado: e.target.value, id: novoVoluntario.endereco?.id || null } })}
+                                            fullWidth
+                                            style={{ marginTop: '16px' }}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                                    {novoVoluntario.id ? 
+                                    (
+                                        <Button variant='contained' onClick={handleUpdateVoluntario}>
+                                            Confirmar
+                                        </Button>
+                                    ) : 
+                                    (
+                                        <Button variant='contained' onClick={handleAddVoluntario}>
+                                            Cadastrar
+                                        </Button>
+                                    )}
+                                <Button variant='contained' onClick={handleClosePopup}>
+                                    Cancelar
+                                </Button>
+                            </div>
                         </form>
                     </div>
                 </Popup>
+
+                    
+                    <Popup open={confirmDelete} onClose={handleCancelDelete}>
+                        <div className='p-4'>
+                            <h1>Confirmação de Exclusão</h1>
+                            <p>Tem certeza de que deseja excluir o voluntário {voluntarioToDelete.nome}?</p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+                                <Button variant='contained' onClick={handleConfirmDelete} className='bg-red-500 text-white'>
+                                    Confirmar
+                                </Button>
+                                <Button variant='contained' onClick={handleCancelDelete}>
+                                    Cancelar
+                                </Button>
+                            </div>
+                        </div>
+                    </Popup>
+
                 </div>
 
                 <div>
@@ -302,6 +420,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                 <table className='rounded-sm bg-white'>
                     <thead>
                         <tr className='text-center'>
+                            <th></th> {/* Coluna para o ícone de lápis */}
                             <th className='px-2'>CPF</th>
                             <th className='px-2'>Nome</th>
                             <th className='px-2'>Telefone</th>
@@ -313,6 +432,15 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
                         {
                             voluntariosList.map((voluntario, index) =>
                             <tr className='text-sm' key={index}>
+                                <td className='px-2 border-[1px] border-gray-600'>
+                                    <button onClick={() => handleEditVoluntario(voluntario.id)}>
+                                        <EditIcon className='text-baby-blue'></EditIcon>
+                                    </button>
+
+                                    <button onClick={() => handleDeleteVoluntario(voluntario)}>
+                                        <DeleteIcon className='text-red-500'></DeleteIcon>
+                                    </button>
+                                </td>
                                 <td className='px-2 border-[1px] border-gray-600'>{voluntario.cpf}</td>
                                 <td className='px-2 border-[1px] border-gray-600'>{voluntario.nome}</td>
                                 <td className='px-2 border-[1px] border-gray-600'>{voluntario.telefone}</td>
