@@ -13,13 +13,6 @@ import 'reactjs-popup/dist/index.css';
 import { Grid, TextField, Button } from '@mui/material';
 import { useState, useEffect } from 'react';
 
-type ControleCesta = {
-    id: number,
-    cesta: string,
-    recebido_por: string,
-    voluntario_responsavel: string,
-    data_hora: Date
-}
 
 type DistribuicaoCesta = {
     id:number,
@@ -40,6 +33,13 @@ type DistribuicaoCesta = {
     }
 }
 
+type DistribuicaoFormData = {
+    data_hora: Date,
+    id_cesta : number,
+    id_voluntario : number,
+    id_beneficiario : number
+}
+
 interface ControleCestasProps {
     APIToken: string
 }
@@ -49,34 +49,13 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [isLoadDefault, setIsLoadDefault] = useState(true);
     const [controleCestasList, setControleCestaList] = useState<DistribuicaoCesta[]>([]);
 
-    let controleCestasList2: ControleCesta[] = [{
-        id: 1,
-        cesta: "Cesta básica",
-        recebido_por: "João da Silva Santos",
-        voluntario_responsavel: "Fernanda Dandara Pereira",
-        data_hora: new Date("10/31/2023, 07:55")
-    },
-    {
-        id: 2,
-        cesta: "Cesta junina",
-        recebido_por: "Tomas de Aquino",
-        voluntario_responsavel: "Tamara Dias Ximenes",
-        data_hora: new Date("10/25/2023, 16:16")
-    },
-    {
-        id: 3,
-        cesta: "Cesta natal",
-        recebido_por: "Paula Matos",
-        voluntario_responsavel: "Daniel Gomes",
-        data_hora: new Date("10/12/2023, 20:34")
-    },
-    {
-        id: 4,
-        cesta: "Cesta XG",
-        recebido_por: "João da Silva Santos",
-        voluntario_responsavel: "Fernanda Dandara Pereira",
-        data_hora: new Date("11/05/2022, 11:20")
-    }];
+    const [openPopup, setOpenPopup] = useState(false);
+    const [formData, setFormData] = useState<DistribuicaoFormData>({
+        id_cesta: 0,
+        id_beneficiario: 0,
+        id_voluntario: 0,
+        data_hora: new Date()
+    });
 
     async function loadDefaultDistribuicaoCesta() {
         try {
@@ -127,6 +106,46 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             loadDefaultDistribuicaoCesta();
     }, [isLoadDefault])
 
+
+    const handleFormSubmit = async () => {
+        const dataToSend = {
+            cesta: { id: formData.id_cesta },
+            voluntario: { id: formData.id_voluntario },
+            beneficiario: { id: formData.id_beneficiario},
+            data_hora: formData.data_hora.toISOString()
+        };
+    
+        try {
+            const response = await fetch('https://edificad-production.up.railway.app/api/distribuicao-cesta', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    Authorization: APIToken
+                },
+                body: JSON.stringify(dataToSend)
+            });
+            if (response.ok) {
+                handleClosePopup();
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao enviar a solicitação:', error);
+        }
+    };
+
+    const handleOpenPopup = () => {
+        setOpenPopup(true);
+    };
+
+    const handleClosePopup = () => {
+        setOpenPopup(false);
+        //setNovoVoluntario(emptyVoluntario);
+    };
+
+    
+
     return (
         <div className='h-[100vh] flex flex-col items-center bg-white'>
             <h1 className='my-8 text-gray-800 text-3xl'>Controle de distribuição de cestas</h1>
@@ -146,10 +165,40 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                     </button>
                 </div>
                 <div>
-                    <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-blue border-2 border-neon-blue text-white'>
+                    <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-blue border-2 border-neon-blue text-white'
+                        onClick={handleOpenPopup}>
                         <AddIcon></AddIcon>
                         Novo registro
                     </button>
+
+                    <Popup open={openPopup} onClose={handleClosePopup}>
+                        <div className='p-4'>
+                            <h1 className='text-center'>Novo Registro</h1>
+                            <form >
+                                <div className='mt-2'>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={6}>
+                                        
+                                        </Grid>
+                                    </Grid>
+                                </div>
+                                
+                                <div className='mt-5 flex justify-around'>
+                                    
+                                    <Button variant='contained' >
+                                        Cadastrar
+                                    </Button>
+                                      
+                                    <Button variant='contained' className='!bg-red-500'
+                                    onClick={handleClosePopup}>
+                                        Cancelar
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </Popup>
+
+
                 </div>
             </div>
             <div className='mt-4'>
