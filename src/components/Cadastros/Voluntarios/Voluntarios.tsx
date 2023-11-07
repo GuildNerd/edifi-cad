@@ -235,7 +235,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
     const handleConfirmDelete = async () => {
         if (voluntarioToDelete) {
             try {
-                const response = await fetch(`${URL}${voluntarioToDelete.id}`, {
+                const response = await fetch(`${URL}/${voluntarioToDelete.id}`, {
                     method: 'DELETE',
                     headers: {
                         Accept: 'application/json',
