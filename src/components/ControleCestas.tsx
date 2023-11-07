@@ -12,6 +12,7 @@ import 'reactjs-popup/dist/index.css';
 import 'reactjs-popup/dist/index.css';
 import { Grid, TextField, Button } from '@mui/material';
 import { useState, useEffect } from 'react';
+import Cestas from './Cadastros/Cestas/Cestas';
 
 
 type DistribuicaoCesta = {
@@ -33,6 +34,41 @@ type DistribuicaoCesta = {
     }
 }
 
+type Beneficiario = {
+    id: number ,
+    nome: string,
+    email?: string,
+    cpf: string,
+    telefone?: string,
+    data_nascimento: string,
+    endereco?: {
+        id: number ,
+        logradouro: string,
+        numero: string,
+        cep: string,
+        bairro: string,
+        cidade: string,
+        estado: string
+    },
+    dependentes: [{
+        id: number,
+        nome: string,
+        email?: string,
+        cpf: string,
+        telefone?: string,
+        data_nascimento: string
+    }];
+}
+
+type Cesta = {
+    id: number,
+    nome: string,
+    descricao: string,
+    quantidade_estoque: number,
+}
+
+
+
 type DistribuicaoFormData = {
     data_hora: Date,
     id_cesta : number,
@@ -48,7 +84,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [inputContent, setInputContent] = useState("");
     const [isLoadDefault, setIsLoadDefault] = useState(true);
     const [controleCestasList, setControleCestaList] = useState<DistribuicaoCesta[]>([]);
-    const [cestaOptions, setCestaOptions] = useState([]);
+    const [cestaOptions, setCestaOptions] = useState<Cesta[]>([]);
+    const [beneficiarioOptions, setBeneficiarioOptions] = useState<Beneficiario[]>([]);
     const [openPopup, setOpenPopup] = useState(false);
     const [formData, setFormData] = useState<DistribuicaoFormData>({
         id_cesta: 0,
@@ -126,7 +163,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                 body: JSON.stringify(dataToSend)
             });
             if (response.ok) {
-                handleClosePopup();
+                //handleClosePopup();
             } else {
                 throw new Error(`${response.status} ${response.statusText}`);
             }
@@ -138,11 +175,11 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const handleOpenPopup = () => {
         setOpenPopup(true);
         loadCestaOptions();
+        loadBeneficiarioOptions();
     };
 
     const handleClosePopup = () => {
         setOpenPopup(false);
-        //setNovoVoluntario(emptyVoluntario);
     };
 
   
@@ -167,6 +204,40 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         }
     }
     
+    const handleCestaChange = (event: React.ChangeEvent<{}>, value: Cesta | null) => {
+        if (value) {
+            console.log(value)
+            setFormData({ ...formData, id_cesta: value.id });
+        }
+    };
+
+
+    async function loadBeneficiarioOptions() {
+        try {
+            let response = await fetch(`https://edificad-production.up.railway.app/api/beneficiario`, {
+                method: "GET",
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                }
+            });
+            if (response.ok) {
+                let data = await response.json();
+                setBeneficiarioOptions(data);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar opções de cesta:', error);
+        }
+    }
+    
+    const handleBeneficiarioChange = (event: React.ChangeEvent<{}>, value: Beneficiario | null) => {
+        if (value) {
+            setFormData({ ...formData, id_beneficiario: value.id });
+        }
+    };
+
 
     return (
         <div className='h-[100vh] flex flex-col items-center bg-white'>
@@ -193,50 +264,55 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                         Novo registro
                     </button>
 
-                    <Popup open={openPopup} onClose={handleClosePopup}>
-                <div className='p-4'>
-                    <h1 className='text-center'>Novo Registro</h1>
-                    <form>
-                        <div className='mt-2'>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Autocomplete
-                                        id="cesta-autocomplete"
-                                        options={cestaOptions}
-                                        getOptionLabel={(option: any) => option.nome}
-                                        renderInput={(params) => <TextField {...params} label="Cesta" />}
-                                        onChange={(event, value) => { 
-                                            if (value) {
-                                                setFormData({ ...formData, id_cesta: value.id });
-                                            }
-                                         }}
-                                    />
+                <Popup open={openPopup} onClose={handleClosePopup}>
+                    <div className='p-4'>
+                        <h1 className='text-center'>Novo Registro</h1>
+                        <form>
+                            <div className='mt-2'>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <Autocomplete
+                                            id="cesta-autocomplete"
+                                            options={cestaOptions}
+                                            getOptionLabel={(option) => option.nome}
+                                            onChange={handleCestaChange}
+                                            renderInput={(params) => <TextField {...params} label="Cesta" />}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <Autocomplete
+                                            id="beneficiario-autocomplete"
+                                            options={beneficiarioOptions}
+                                            getOptionLabel={(option) => option.nome}
+                                            onChange={handleBeneficiarioChange}
+                                            renderInput={(params) => <TextField {...params} label="Beneficiário" />}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <TextField
+                                            id="data_hora"
+                                            label="Registro"
+                                            type="datetime-local"
+                                            defaultValue={formData.data_hora.toISOString().slice(0, 16)}
+                                            InputLabelProps={{
+                                                shrink: true,
+                                            }}
+                                            onChange={(e) => setFormData({ ...formData, data_hora: new Date(e.target.value) })}
+                                        />
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={6}>
-                                    <TextField
-                                        id="data_hora"
-                                        label="Registro"
-                                        type="datetime-local"
-                                        defaultValue={formData.data_hora.toISOString().slice(0, 16)}
-                                        InputLabelProps={{
-                                            shrink: true,
-                                        }}
-                                        onChange={(e) => setFormData({ ...formData, data_hora: new Date(e.target.value) })}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </div>
-                        <div className='mt-5 flex justify-around'>
-                            <Button variant='contained' onClick={handleFormSubmit }>
-                                Cadastrar
-                            </Button>
-                            <Button variant='contained' className='!bg-red-500' onClick={handleClosePopup}>
-                                Cancelar
-                            </Button>
-                        </div>
-                    </form>
-                </div>
-            </Popup>
+                            </div>
+                            <div className='mt-5 flex justify-around'>
+                                <Button variant='contained' onClick={handleFormSubmit }>
+                                    Cadastrar
+                                </Button>
+                                <Button variant='contained' className='!bg-red-500' onClick={handleClosePopup}>
+                                    Cancelar
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                </Popup>
 
 
                 </div>
