@@ -1,7 +1,17 @@
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import Popup from 'reactjs-popup';
+import Autocomplete from '@mui/material/Autocomplete';
 
-import { useState } from 'react';
+import 'reactjs-popup/dist/index.css';
+
+import 'reactjs-popup/dist/index.css';
+import { Grid, TextField, Button } from '@mui/material';
+import { useState, useEffect } from 'react';
 
 type ControleCesta = {
     id: number,
@@ -11,13 +21,35 @@ type ControleCesta = {
     data_hora: Date
 }
 
+type DistribuicaoCesta = {
+    id:number,
+    data_hora: Date,
+    cesta : {
+        id : number,
+        nome : string
+    },
+    voluntario : {
+        id : number,
+        nome : string,
+        cpf : string
+    },
+    beneficiario :{
+        id : number,
+        nome : string,
+        cpf : string
+    }
+}
+
 interface ControleCestasProps {
     APIToken: string
 }
 
 export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [inputContent, setInputContent] = useState("");
-    let controleCestasList: ControleCesta[] = [{
+    const [isLoadDefault, setIsLoadDefault] = useState(true);
+    const [controleCestasList, setControleCestaList] = useState<DistribuicaoCesta[]>([]);
+
+    let controleCestasList2: ControleCesta[] = [{
         id: 1,
         cesta: "Cesta básica",
         recebido_por: "João da Silva Santos",
@@ -46,6 +78,28 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         data_hora: new Date("11/05/2022, 11:20")
     }];
 
+    async function loadDefaultDistribuicaoCesta() {
+        try {
+            let response = await fetch(`https://edificad-production.up.railway.app/api/distribuicao-cesta`, {
+                method: "GET",
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                }
+            })
+            if (response.ok) {
+                let data: DistribuicaoCesta[] = await response.json();
+                setControleCestaList(data);
+            }
+            else
+                throw new Error(`${response.status} ${response.statusText}`);
+        }
+
+        catch (error) {
+
+        }
+    }
+
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
         setInputContent(event.currentTarget.value);
     }
@@ -68,13 +122,18 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         }
     };
 
+    useEffect(() => {
+        if (isLoadDefault)
+            loadDefaultDistribuicaoCesta();
+    }, [isLoadDefault])
+
     return (
         <div className='h-[100vh] flex flex-col items-center bg-white'>
             <h1 className='my-8 text-gray-800 text-3xl'>Controle de distribuição de cestas</h1>
             <div className='my-4 ml-8 self-start'>
                 <h3 className='text-gray-800 text-xl'>Dados do último mês</h3>
                 <div className='flex justify-center gap-16 text-gray-800'>
-                    <p>Cestas distribuídas: 35</p>
+                    <p>Cestas distribuídas: {controleCestasList.length}</p>
                     <p>Beneficiários assistidos: 28</p>
                 </div>
             </div>
@@ -99,14 +158,14 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                         <th className='px-2'>Cesta</th>
                         <th className='px-2'>Recebido por</th>
                         <th className='px-2'>Voluntário responsável</th>
-                        <th className='px-2'>Data e hora da entrega</th>
+                        <th className='px-2'>Entrega</th>
                     </tr>
                     {
                         controleCestasList.map((controle, index) =>
                             <tr className='text-sm'>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.cesta}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.recebido_por}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.voluntario_responsavel}</td>
+                                <td className='px-2 border-[1px] border-gray-600'>{controle.cesta.nome}</td>
+                                <td className='px-2 border-[1px] border-gray-600'>{controle.beneficiario.nome}</td>
+                                <td className='px-2 border-[1px] border-gray-600'>{controle.voluntario.nome}</td>
                                 <td className='px-2 border-[1px] border-gray-600'>{controle.data_hora.toLocaleString("pt-BR")}</td>
                             </tr>
                         )
