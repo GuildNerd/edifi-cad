@@ -15,14 +15,14 @@ import { useState, useEffect } from 'react';
 const URL = "https://edificad-production.up.railway.app/api/beneficiario";
 
 type Beneficiario = {
-    id: number ,
+    id: number | null,
     nome: string,
     email?: string,
     cpf: string,
     telefone?: string,
     data_nascimento: string,
     endereco?: {
-        id: number ,
+        id: number | null,
         logradouro: string,
         numero: string,
         cep: string,
@@ -31,7 +31,7 @@ type Beneficiario = {
         estado: string
     },
     dependentes: [{
-        id: number,
+        id: number | null,
         nome: string,
         email?: string,
         cpf: string,
@@ -40,15 +40,15 @@ type Beneficiario = {
     }];
 }
 
-let emptyBeneficiario  = {
-    id: 0,
+let emptyBeneficiario = {
+    id: null,
     nome: "",
     email: "",
     cpf: "",
     telefone: "",
     data_nascimento: "",
     endereco: {
-        id: 0,
+        id: null,
         logradouro: "",
         numero: "",
         cep: "",
@@ -68,15 +68,32 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
     const [searchingAttribute, setSearchingAttribute] = useState("cpf");
     const [isLoadDefault, setIsLoadDefault] = useState(true);
     const [beneficiariosList, setBeneficiariosList] = useState<Beneficiario[]>([])
-
-    const [openPopup, setOpenPopup] = useState(false);
-    const [novoBeneficiario, setNovoBeneficiario] = useState<Partial<Beneficiario>>({})
-
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [entityToDelete, setEntityToDelete] = useState<Partial<Beneficiario>>({});
 
+    const [openPopup, setOpenPopup] = useState(false);
+    const [openPopupUpdate, setOpenPopupUpdate] = useState(false);
+    const [novoBeneficiario, setNovoBeneficiario] = useState({
+        nome: "",
+        email: "",
+        cpf: "",
+        telefone: "",
+        data_nascimento: "",
+        endereco: {
+            id: null,
+            logradouro: "",
+            numero: "",
+            cep: "",
+            bairro: "",
+            cidade: "",
+            estado: ""
+        },
+        dependentes: []
+    })
+
+
     const handleSearchBtn = async () => {
-        if(inputContent.length != 0) {
+        if (inputContent.length != 0) {
             setIsLoadDefault(true);
             let searchResults: Beneficiario[] = await getBeneficiario(inputContent);
             setBeneficiariosList(searchResults);
@@ -92,7 +109,7 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
 
     const handleInputOnChange = (e: React.FormEvent<HTMLInputElement>) => {
         setInputContent(e.currentTarget.value);
-        if(inputContent.length == 0)
+        if (inputContent.length == 0)
             setIsLoadDefault(true)
         else
             setIsLoadDefault(false)
@@ -120,7 +137,7 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
         }
 
         catch (error) {
-            return([]);
+            return ([]);
         }
     }
 
@@ -142,7 +159,7 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
         }
 
         catch (error) {
-            
+
         }
     }
 
@@ -155,6 +172,10 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
         setOpenPopup(false);
         setNovoBeneficiario(emptyBeneficiario);
     };
+
+    const handleClosePopupUpdate = () => {
+        setOpenPopupUpdate(false);
+    }
 
     const handleAddBeneficiario = async () => {
         try {
@@ -181,12 +202,13 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
         }
     }
 
-    const handleEditandoBeneficiario = (beneficiario : Beneficiario) => {
+    const handleEditandoBeneficiario = (beneficiario) => {
         setNovoBeneficiario(beneficiario);
-        setOpenPopup(true);
+        setOpenPopupUpdate(true);
     }
 
-    const handleUpdateBeneficiario =async () => {
+    const handleUpdateBeneficiario = async () => {
+        console.log("Entrei no handleUpdateBeneficiario, dados do beneficiario para alterar:\n"+ JSON.stringify(novoBeneficiario));
         try {
             const response = await fetch(`${URL}`, {
                 method: 'PUT',
@@ -200,7 +222,7 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
 
             if (response.ok) {
                 loadDefaultBeneficarios();
-                setOpenPopup(false);
+                setOpenPopupUpdate(false);
             } else {
                 throw new Error(`${response.status} ${response.statusText}`);
             }
@@ -209,7 +231,7 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
         }
     }
 
-    const handleDeleteBeneficiario = (beneficiario : Beneficiario) =>{
+    const handleDeleteBeneficiario = (beneficiario: Beneficiario) => {
         setEntityToDelete(beneficiario);
         setConfirmDelete(true);
     }
@@ -244,9 +266,9 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
 
 
     useEffect(() => {
-        if(isLoadDefault)
+        if (isLoadDefault)
             loadDefaultBeneficarios();
-    },[isLoadDefault])
+    }, [isLoadDefault])
 
     return (
         <div className='h-[100vh] flex flex-col items-center'>
@@ -269,14 +291,14 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
 
                 <div>
                     <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-pink border-2 border-neon-pink text-white'
-                    onClick={handleOpenPopup}>
+                        onClick={handleOpenPopup}>
                         <AddIcon></AddIcon>
                         Novo beneficiário
                     </button>
 
                     <Popup open={openPopup} onClose={handleClosePopup}>
                         <div className='p-4'>
-                            <h1 className='text-center'>{novoBeneficiario.id ? 'Editando Beneficiário' : 'Cadastrando Beneficiário'}</h1>
+                            <h1 className='text-center'>Cadastrando Beneficiário</h1>
                             <form >
                                 <div className='mt-2'>
                                     <h3 className='my-2'>Dados Pessoais</h3>
@@ -363,17 +385,9 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
                                     </Grid>
                                 </div>
                                 <div className='mt-5 flex justify-around'>
-                                    {novoBeneficiario.id ?
-                                        (
-                                            <Button variant='contained' onClick={handleUpdateBeneficiario}>
-                                                Confirmar
-                                            </Button>
-                                        ) :
-                                        (
-                                            <Button variant='contained' onClick={handleAddBeneficiario}>
-                                                Cadastrar
-                                            </Button>
-                                        )}
+                                    <Button variant='contained' onClick={handleAddBeneficiario}>
+                                        Cadastrar
+                                    </Button>
                                     <Button variant='contained' onClick={handleClosePopup} className='!bg-red-500'>
                                         Cancelar
                                     </Button>
@@ -397,12 +411,6 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
                         </div>
                     </Popup>
 
-                </div>
-                <div>
-                    <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-pink border-2 border-neon-pink text-white'>
-                        <ChangeCircleIcon></ChangeCircleIcon>
-                        Alterar dados de beneficiário
-                    </button>
                 </div>
             </div>
             <div className='mt-4'>
@@ -428,6 +436,105 @@ export default function Beneficiarios({ APIToken }: BeneficiariosProps) {
                                             <button onClick={() => handleEditandoBeneficiario(beneficiario)}>
                                                 <EditIcon className='text-baby-blue'></EditIcon>
                                             </button>
+                                            <Popup open={openPopupUpdate}>
+                                                <div className='p-4'>
+                                                    <h1 className='text-center'>Editando Beneficiário</h1>
+                                                    <form >
+                                                        <div className='mt-2'>
+                                                            <h3 className='my-2'>Dados Pessoais</h3>
+                                                            <Grid container spacing={2}>
+                                                                <Grid item xs={6}>
+                                                                    <TextField
+                                                                        label="Nome"
+                                                                        value={novoBeneficiario.nome}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, nome: e.target.value })}
+                                                                        fullWidth
+                                                                    />
+                                                                    <TextField
+                                                                        label="Email"
+                                                                        value={novoBeneficiario.email}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, email: e.target.value })}
+                                                                        fullWidth
+                                                                        style={{ marginTop: '16px' }}
+                                                                    />
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <TextField
+                                                                        label="Telefone"
+                                                                        value={novoBeneficiario.telefone}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, telefone: e.target.value })}
+                                                                        fullWidth
+                                                                    />
+                                                                    <TextField
+                                                                        label="CPF"
+                                                                        value={novoBeneficiario.cpf}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, cpf: e.target.value })}
+                                                                        fullWidth
+                                                                        style={{ marginTop: '16px' }}
+                                                                    />
+                                                                </Grid>
+                                                            </Grid>
+                                                        </div>
+                                                        <div className='mt-4'>
+                                                            <h3 className='my-2'>Endereço</h3>
+                                                            <Grid container spacing={2}>
+                                                                <Grid item xs={6}>
+                                                                    <TextField
+                                                                        label="Logradouro"
+                                                                        value={novoBeneficiario.endereco?.logradouro || ''}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, logradouro: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
+                                                                        fullWidth
+                                                                    />
+                                                                    <TextField
+                                                                        label="Número"
+                                                                        value={novoBeneficiario.endereco?.numero || ''}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, numero: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
+                                                                        fullWidth
+                                                                        style={{ marginTop: '16px' }}
+                                                                    />
+                                                                    <TextField
+                                                                        label="CEP"
+                                                                        value={novoBeneficiario.endereco?.cep || ''}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, cep: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
+                                                                        fullWidth
+                                                                        style={{ marginTop: '16px' }}
+                                                                    />
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <TextField
+                                                                        label="Bairro"
+                                                                        value={novoBeneficiario.endereco?.bairro || ''}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, bairro: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
+                                                                        fullWidth
+                                                                    />
+                                                                    <TextField
+                                                                        label="Cidade"
+                                                                        value={novoBeneficiario.endereco?.cidade || ''}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, cidade: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
+                                                                        fullWidth
+                                                                        style={{ marginTop: '16px' }}
+                                                                    />
+                                                                    <TextField
+                                                                        label="Estado"
+                                                                        value={novoBeneficiario.endereco?.estado || ''}
+                                                                        onChange={(e) => setNovoBeneficiario({ ...novoBeneficiario, endereco: { ...novoBeneficiario.endereco, estado: e.target.value, id: novoBeneficiario.endereco?.id || null } })}
+                                                                        fullWidth
+                                                                        style={{ marginTop: '16px' }}
+                                                                    />
+                                                                </Grid>
+                                                            </Grid>
+                                                        </div>
+                                                        <div className='mt-5 flex justify-around'>
+                                                            <Button variant='contained' onClick={handleUpdateBeneficiario}>
+                                                                Confirmar
+                                                            </Button>
+                                                            <Button variant='contained' onClick={handleClosePopupUpdate} className='!bg-red-500'>
+                                                                Cancelar
+                                                            </Button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </Popup>
 
                                             <button onClick={() => handleDeleteBeneficiario(beneficiario)}>
                                                 <DeleteIcon className='text-red-500'></DeleteIcon>

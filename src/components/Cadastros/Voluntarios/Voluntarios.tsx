@@ -156,10 +156,6 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
         setNovoVoluntario(emptyVoluntario);
     };
 
-    const handleOpenPopupUpdate = () => {
-        setOpenPopupUpdate(true);
-    };
-
     const handleClosePopupUpdate = () => {
         setOpenPopupUpdate(false);
     }
