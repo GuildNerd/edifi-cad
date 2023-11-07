@@ -48,7 +48,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [inputContent, setInputContent] = useState("");
     const [isLoadDefault, setIsLoadDefault] = useState(true);
     const [controleCestasList, setControleCestaList] = useState<DistribuicaoCesta[]>([]);
-
+    const [cestaOptions, setCestaOptions] = useState([]);
     const [openPopup, setOpenPopup] = useState(false);
     const [formData, setFormData] = useState<DistribuicaoFormData>({
         id_cesta: 0,
@@ -137,6 +137,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
 
     const handleOpenPopup = () => {
         setOpenPopup(true);
+        loadCestaOptions();
     };
 
     const handleClosePopup = () => {
@@ -144,6 +145,27 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         //setNovoVoluntario(emptyVoluntario);
     };
 
+  
+    async function loadCestaOptions() {
+        try {
+            let response = await fetch(`https://edificad-production.up.railway.app/api/cesta`, {
+                method: "GET",
+                headers: {
+                    Accept: 'application/json',
+                    Authorization: APIToken,
+                }
+            });
+            if (response.ok) {
+                let data = await response.json();
+                console.log(data)
+                setCestaOptions(data);
+            } else {
+                throw new Error(`${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar opções de cesta:', error);
+        }
+    }
     
 
     return (
@@ -172,31 +194,49 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                     </button>
 
                     <Popup open={openPopup} onClose={handleClosePopup}>
-                        <div className='p-4'>
-                            <h1 className='text-center'>Novo Registro</h1>
-                            <form >
-                                <div className='mt-2'>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                        
-                                        </Grid>
-                                    </Grid>
-                                </div>
-                                
-                                <div className='mt-5 flex justify-around'>
-                                    
-                                    <Button variant='contained' >
-                                        Cadastrar
-                                    </Button>
-                                      
-                                    <Button variant='contained' className='!bg-red-500'
-                                    onClick={handleClosePopup}>
-                                        Cancelar
-                                    </Button>
-                                </div>
-                            </form>
+                <div className='p-4'>
+                    <h1 className='text-center'>Novo Registro</h1>
+                    <form>
+                        <div className='mt-2'>
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <Autocomplete
+                                        id="cesta-autocomplete"
+                                        options={cestaOptions}
+                                        getOptionLabel={(option: any) => option.nome}
+                                        renderInput={(params) => <TextField {...params} label="Cesta" />}
+                                        onChange={(event, value) => { 
+                                            if (value) {
+                                                setFormData({ ...formData, id_cesta: value.id });
+                                            }
+                                         }}
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <TextField
+                                        id="data_hora"
+                                        label="Registro"
+                                        type="datetime-local"
+                                        defaultValue={formData.data_hora.toISOString().slice(0, 16)}
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                        onChange={(e) => setFormData({ ...formData, data_hora: new Date(e.target.value) })}
+                                    />
+                                </Grid>
+                            </Grid>
                         </div>
-                    </Popup>
+                        <div className='mt-5 flex justify-around'>
+                            <Button variant='contained' onClick={handleFormSubmit }>
+                                Cadastrar
+                            </Button>
+                            <Button variant='contained' className='!bg-red-500' onClick={handleClosePopup}>
+                                Cancelar
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </Popup>
 
 
                 </div>
