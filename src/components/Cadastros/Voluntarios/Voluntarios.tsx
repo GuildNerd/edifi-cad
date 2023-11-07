@@ -170,6 +170,7 @@ export default function Voluntarios({ APIToken }: VoluntariosProps) {
     };
 
     // editando voluntário
+    //TODO: avaliar se é necessário fazer uma chamada para obter o voluntário novamente. Não pode usar o objeto da lista???
     const handleEditVoluntario = async (id: number) => {
         try {
             let response = await fetch(`${URL}${id}`, {
