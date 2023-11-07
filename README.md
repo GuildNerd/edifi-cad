@@ -1,7 +1,2 @@
-# pizzaria-gian-carlo
-Website de pizzaria
-
-Este projeto faz parte dos meus estudos de React e JavaScript, além de também fazer parte do meu portfolio.
-Para a construção do site utilizei as bibliotecas React e Tailwindcss, e para a prototipação das interfaces utilizei o Figma.
-
-Estou sempre aberto a sugestões de alterações, é só entrar em contato.
+# Edifi-Cad
+Registration and management system for a Non-Governmental Organization, called Edificando Vidas. This project is the main work of the discipline Interdisciplinary Work: Applications for Sustainability and will serve as a management system of food parcels, volunteers and beneficiaries.
