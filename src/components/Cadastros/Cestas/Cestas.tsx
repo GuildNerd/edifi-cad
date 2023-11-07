@@ -6,7 +6,8 @@ import 'reactjs-popup/dist/index.css';
 
 import { useState, useEffect } from 'react';
 
-import AlterarCesta from './AlterarCesta';
+import UpdateCesta from './UpdateCesta';
+import CreateCesta from './CreateCesta';
 
 export type Cesta = {
     id: number,
@@ -22,7 +23,7 @@ interface CestasProps {
 export default function Cestas({APIToken}: CestasProps) {
     const [inputContent, setInputContent] = useState("");
     const [isLoadDefault, setIsLoadDefault] = useState(true);
-    const [isShowAlterarCesta, setIsShowAlterarCesta] = useState(false);
+    const [isShowUpdateCesta, setIsShowUpdateCesta] = useState(false);
     const [cestasList, setCestasList] = useState<Cesta[]>([]);
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -107,18 +108,25 @@ export default function Cestas({APIToken}: CestasProps) {
                     </button>
                 </div>
                 <div>
-                    <button className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-orange border-2 border-neon-orange text-white'>
-                        <AddIcon></AddIcon>
-                        Nova cesta
-                    </button>
+                    <Popup trigger={
+                            <button onClick={() => setIsShowUpdateCesta(!isShowUpdateCesta)} className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-orange border-2 border-neon-orange text-white'>
+                                <AddIcon />
+                                Nova cesta
+                            </button>
+                        } position="right center" modal>
+                        <CreateCesta APIToken={APIToken} />
+                    </Popup>
+
+
                 </div>
                 <div>
                     <Popup trigger={
-                        <button onClick={() => setIsShowAlterarCesta(!isShowAlterarCesta)} className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-orange border-2 border-neon-orange text-white'>
-                            <ChangeCircleIcon></ChangeCircleIcon>
-                            Alterar dados de cesta
-                        </button>} position="right center" modal>
-                        <AlterarCesta APIToken={APIToken} />
+                            <button onClick={() => setIsShowUpdateCesta(!isShowUpdateCesta)} className='py-1 px-2 rounded-md flex items-center align-middle bg-neon-orange border-2 border-neon-orange text-white'>
+                                <ChangeCircleIcon></ChangeCircleIcon>
+                                Alterar dados de cesta
+                            </button>
+                        } position="right center" modal>
+                        <UpdateCesta APIToken={APIToken} />
                     </Popup>
                 </div>
             </div>

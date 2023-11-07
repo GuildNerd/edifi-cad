@@ -6,15 +6,14 @@ import { useState } from 'react';
 
 import { Cesta } from "./Cestas"
 
-interface AlterarCestaProps {
+interface UpdateCestaProps {
     APIToken: string
 }
 
-export default function AlterarCesta({APIToken}: AlterarCestaProps) {
+export default function UpdateCesta({APIToken}: UpdateCestaProps) {
     const [inputCesta, setInputCesta] = useState("");
     const [cesta, setCesta] = useState<Cesta>({id: 0, nome: "", descricao: "", quantidade_estoque: 0});
-    const [isShowSearchError, setIsShowSearchError] = useState(false);
-    const [isShowSearchDone, setIsShowSearchDone] = useState(false);
+    const [searchError, setSearchError] = useState("");
     const [isShowCesta, setIsShowCesta] = useState(false);
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -29,7 +28,7 @@ export default function AlterarCesta({APIToken}: AlterarCestaProps) {
                 setIsShowCesta(true);
             }
             else
-                setIsShowSearchError(true);
+                setSearchError("Cesta não encontrada. Tente novamente, por favor.");
         }
     }
 
@@ -40,7 +39,6 @@ export default function AlterarCesta({APIToken}: AlterarCestaProps) {
 
     function onChangeNome(novoNome) {
         let cestaTemp = { ...cesta };
-        console.log(cestaTemp);
         cestaTemp.nome = novoNome;
 
         setCesta(cestaTemp);
@@ -60,32 +58,13 @@ export default function AlterarCesta({APIToken}: AlterarCestaProps) {
         setCesta(cestaTemp);
     }
 
-    async function changeCesta() {
-        let requestBody = {...cesta}
-        try{
-            let request = await fetch(`https://edificad-production.up.railway.app/api/cesta`, {
-                method: "PUT",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            })
-
-            if(request.ok)
-                setIsShowSearchDone(true)
-            else
-                throw new Error();
-        }
-        catch (error) {
-            setIsShowSearchError(true);
-        }
-    }
-
     async function getCesta(cestaBuscada: string) {
         try{
             let response = await fetch(`https://edificad-production.up.railway.app/api/cesta?id=${cestaBuscada}`, {
                 method: "GET",
                 headers: {
                     Accept: 'application/json',
-                    Authorization: APIToken,
+                    Authorization: APIToken
                 }
             })
             if (response.ok) {
@@ -96,7 +75,26 @@ export default function AlterarCesta({APIToken}: AlterarCestaProps) {
                 throw new Error(`${response.status} ${response.statusText}`);
         }
         catch (error) {
-            return null
+            return null;
+        }
+    }
+
+    async function updateCesta() {
+        let requestBody = {...cesta}
+        try{
+            let request = await fetch(`https://edificad-production.up.railway.app/api/cesta`, {
+                method: "PUT",
+                headers: { 'Content-Type': 'application/json', Authorization: APIToken },
+                body: JSON.stringify(requestBody)
+            })
+
+            if(request.ok)
+                alert("Alteração realizada com sucesso!");
+            else
+                throw new Error();
+        }
+        catch (error) {
+            setSearchError("Não foi possível fazer a alteração. Tente novamente, por favor.");
         }
     }
 
@@ -116,14 +114,14 @@ export default function AlterarCesta({APIToken}: AlterarCestaProps) {
                     <div className='text-center min-h-[30px] rounded-md border-[1px] border-black'>
                         <p>{cesta.id}</p>
                     </div>
-                    <form className='flex flex-col'>
+                    <form onSubmit={(event) => event.preventDefault()} className='flex flex-col'>
                         <label htmlFor="inputNome" className='mt-2'>Nome</label>
-                        <input type="text" name="inputNome" id="inputNome" value={cesta.nome} onChange={onChangeNome} className='text-center min-h-[30px] rounded-md border-[1px] border-black' />
+                        <input type="text" name="inputNome" id="inputNome" value={cesta.nome} onChange={(e) => onChangeNome(e.target.value)} className='text-center min-h-[30px] rounded-md border-[1px] border-black' />
                         <label htmlFor="inputDescricao" className='mt-2'>Descrição</label>
-                        <input type="text" name="inputDescricao" id="inputDescricao" value={cesta.descricao} onChange={onChangeDescricao} className='text-center min-h-[30px] rounded-md border-[1px] border-black' />
+                        <input type="text" name="inputDescricao" id="inputDescricao" value={cesta.descricao} onChange={(e) => onChangeDescricao(e.target.value)} className='text-center min-h-[30px] rounded-md border-[1px] border-black' />
                         <label htmlFor="inputQuantEstoque" className='mt-2'>Quantidade em estoque</label>
-                        <input type="number" name="inputQuantEstoque" id="inputQuantEstoque" value={cesta.quantidade_estoque} onChange={onChangeQuantEstoque} className='text-center min-h-[30px] rounded-md border-[1px] border-black' />
-                        <button onClick={changeCesta} className='p-1 mt-2 flex justify-center rounded border-[1px] bg-neon-orange text-white'>
+                        <input type="number" name="inputQuantEstoque" id="inputQuantEstoque" value={cesta.quantidade_estoque} onChange={(e) => onChangeQuantEstoque(e.target.value)} className='text-center min-h-[30px] rounded-md border-[1px] border-black' />
+                        <button onClick={updateCesta} className='p-1 mt-2 flex justify-center rounded border-[1px] bg-neon-orange text-white'>
                             <ChangeCircleIcon />
                             Alterar dados
                         </button>
@@ -137,8 +135,7 @@ export default function AlterarCesta({APIToken}: AlterarCestaProps) {
                 null
             }
             
-            {   isShowSearchError ? <p className='font-bold text-lg text-red-600'>Erro: não foi possível encontrar a cesta buscada</p> : null   }
-            {   isShowSearchDone ? <p className='font-bold text-lg text-green-600'>Cesta alterada com sucesso!</p> : null   }
+            {   searchError != "" ? <p className='font-bold text-lg text-red-600'>{searchError}</p> : null   }
         </div>
     )
 }
