@@ -8,7 +8,7 @@ import {Grid, TextField, Button} from '@mui/material';
 import {useState, useEffect} from 'react';
 
 import {Voluntario, emptyVoluntario} from "./VoluntariosTypes";
-import {handleGet, handlePost, handlePut, handleDelete} from "../commons/Requests";
+import {handleDelete, handleGet, handlePost, handlePut} from "../../commons/Requests";
 import {API_URL_VOLUNTARIO} from "../../../apiConfig";
 
 interface VoluntariosProps {
@@ -55,21 +55,13 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
     }
 
     async function getVoluntario(voluntarioBuscado: string) {
-        try {
-            let url = `${API_URL_VOLUNTARIO}?${searchingAttribute}=${voluntarioBuscado}`;
-            return await handleGet(url, APIToken)
-        } catch (error) {
-            return ([]);
-        }
+        let url = `${API_URL_VOLUNTARIO}?${searchingAttribute}=${voluntarioBuscado}`;
+        return await handleGet(url, APIToken)
     }
 
     async function loadDefaultVoluntarios() {
-        try {
-            let response = await handleGet(API_URL_VOLUNTARIO, APIToken);
-            setVoluntariosList(response);
-        } catch (error) {
-
-        }
+        let response = await handleGet(API_URL_VOLUNTARIO, APIToken);
+        setVoluntariosList(response);
     }
 
     const handleOpenPopup = () => {
@@ -90,7 +82,7 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
     }
 
     // adicionar voluntário
-    const handleAddVoluntario = async () => {
+    async function handleAddVoluntario() {
         let successAdd = () => {
             loadDefaultVoluntarios();
             setOpenPopup(false);
@@ -98,7 +90,7 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
         }
 
         await handlePost(API_URL_VOLUNTARIO, novoVoluntario, APIToken, successAdd, () => {});
-    };
+    }
 
     // editando voluntário
     const handleEditVoluntario = (voluntario) => {
@@ -107,13 +99,13 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
     };
 
 
-    const handleUpdateVoluntario = async () => {
+    async function handleUpdateVoluntario(){
         let successUpdate = () => {
             loadDefaultVoluntarios();
             setOpenPopupUpdate(false);
         }
         await handlePut(API_URL_VOLUNTARIO, novoVoluntario, APIToken, successUpdate, () => {})
-    };
+    }
 
     // removendo voluntario
     const handleDeleteVoluntario = (voluntario: Voluntario) => {
@@ -126,7 +118,7 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
         setVoluntarioToDelete(emptyVoluntario);
     };
 
-    const handleConfirmDelete = async () => {
+    async function handleConfirmDelete () {
         if (voluntarioToDelete) {
             let url = `${API_URL_VOLUNTARIO}/${voluntarioToDelete.id}`;
             let successDelete = () => {
@@ -135,7 +127,7 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
             }
             await handleDelete(url,  APIToken, successDelete, () => {})
         }
-    };
+    }
 
     useEffect(() => {
         if (isLoadDefault)

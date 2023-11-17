@@ -8,8 +8,8 @@ import {Button, Grid, TextField} from '@mui/material';
 import {useEffect, useState} from 'react';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
-import {Beneficiario, emptyBeneficiario, emptyBeneficiarioPost} from "./BeneficiariosTypes";
-import {handleDelete, handleGet, handlePost, handlePut} from "../commons/Requests";
+import {Beneficiario, emptyBeneficiarioPost} from "./BeneficiariosTypes";
+import {handleDelete, handleGet, handlePost, handlePut} from "../../commons/Requests";
 import {API_URL_BENEFICIARIO} from "../../../apiConfig";
 
 interface BeneficiarioProps {

@@ -11,7 +11,7 @@ import Home from './components/Home'
 import Beneficiarios from './components/Cadastros/Beneficiarios/Beneficiarios'
 import Cestas from "./components/Cadastros/Cestas/Cestas";
 import Voluntarios from "./components/Cadastros/Voluntarios/Voluntarios";
-import ControleCestas from "./components/ControleCestas";
+import ControleCestas from "./components/Processos/ControleCestas";
 
 function App() {
   const [shownPage, setShownPage] = useState("login");

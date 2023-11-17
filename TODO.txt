@@ -1,0 +1,1 @@
+TODO: Possívelmente está faltando algum try/catch para tratar erros no autocomplete. Por isso o pop-up fecha ao selecionar um registro

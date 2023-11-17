@@ -12,69 +12,11 @@ import 'reactjs-popup/dist/index.css';
 import 'reactjs-popup/dist/index.css';
 import { Grid, TextField, Button } from '@mui/material';
 import { useState, useEffect } from 'react';
-import Cestas from './Cadastros/Cestas/Cestas';
+import Cestas from '../Cadastros/Cestas/Cestas';
 
-
-type DistribuicaoCesta = {
-    id:number,
-    data_hora: Date,
-    cesta : {
-        id : number,
-        nome : string
-    },
-    voluntario : {
-        id : number,
-        nome : string,
-        cpf : string
-    },
-    beneficiario :{
-        id : number,
-        nome : string,
-        cpf : string
-    }
-}
-
-type Beneficiario = {
-    id: number ,
-    nome: string,
-    email?: string,
-    cpf: string,
-    telefone?: string,
-    data_nascimento: string,
-    endereco?: {
-        id: number ,
-        logradouro: string,
-        numero: string,
-        cep: string,
-        bairro: string,
-        cidade: string,
-        estado: string
-    },
-    dependentes: [{
-        id: number,
-        nome: string,
-        email?: string,
-        cpf: string,
-        telefone?: string,
-        data_nascimento: string
-    }];
-}
-
-type Cesta = {
-    id: number,
-    nome: string,
-    descricao: string,
-    quantidade_estoque: number,
-}
-
-
-
-type DistribuicaoFormData = {
-    data_hora: Date,
-    id_cesta : number,
-    id_voluntario : number,
-    id_beneficiario : number
-}
+import {handleDelete, handleGet, handlePost, handlePut} from "../commons/Requests";
+import {DistribuicaoCesta, DistribuicaoFormData, Beneficiario, Cesta} from './ControleCestasTypes'
+import {API_URL_DIST_CESTA, API_URL_BENEFICIARIO, API_URL_CESTA} from "../../apiConfig";
 
 interface ControleCestasProps {
     APIToken: string
@@ -95,25 +37,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     });
 
     async function loadDefaultDistribuicaoCesta() {
-        try {
-            let response = await fetch(`https://edificad-production.up.railway.app/api/distribuicao-cesta`, {
-                method: "GET",
-                headers: {
-                    Accept: 'application/json',
-                    Authorization: APIToken,
-                }
-            })
-            if (response.ok) {
-                let data: DistribuicaoCesta[] = await response.json();
-                setControleCestaList(data);
-            }
-            else
-                throw new Error(`${response.status} ${response.statusText}`);
-        }
-
-        catch (error) {
-
-        }
+        let data = await handleGet(API_URL_DIST_CESTA, APIToken);
+        setControleCestaList(data);
     }
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -125,7 +50,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     }
 
     async function getCesta(controleBuscado: string) {
-        await fetch(`https://edificad-production.up.railway.app/api/cesta/${controleBuscado}`)
+        await fetch(`${API_URL_CESTA}/${controleBuscado}`)
         .then((resposta) => resposta.json())
         .then((data) => {
             controleCestasList.push(data);
@@ -144,33 +69,15 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     }, [isLoadDefault])
 
 
-    const handleFormSubmit = async () => {
+    async function handleFormSubmit() {
         const dataToSend = {
             cesta: { id: formData.id_cesta },
             voluntario: { id: formData.id_voluntario },
             beneficiario: { id: formData.id_beneficiario},
             data_hora: formData.data_hora.toISOString()
         };
-    
-        try {
-            const response = await fetch('https://edificad-production.up.railway.app/api/distribuicao-cesta', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    Authorization: APIToken
-                },
-                body: JSON.stringify(dataToSend)
-            });
-            if (response.ok) {
-                //handleClosePopup();
-            } else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            console.error('Erro ao enviar a solicitação:', error);
-        }
-    };
+        await handlePost(API_URL_DIST_CESTA, dataToSend, APIToken, () =>{}, () => {})
+    }
 
     const handleOpenPopup = () => {
         setOpenPopup(true);
@@ -184,24 +91,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
 
   
     async function loadCestaOptions() {
-        try {
-            let response = await fetch(`https://edificad-production.up.railway.app/api/cesta`, {
-                method: "GET",
-                headers: {
-                    Accept: 'application/json',
-                    Authorization: APIToken,
-                }
-            });
-            if (response.ok) {
-                let data = await response.json();
-                console.log(data)
-                setCestaOptions(data);
-            } else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar opções de cesta:', error);
-        }
+        let data = await handleGet(API_URL_DIST_CESTA, APIToken);
+        setCestaOptions(data);
     }
     
     const handleCestaChange = (event: React.ChangeEvent<{}>, value: Cesta | null) => {
@@ -211,25 +102,9 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         }
     };
 
-
     async function loadBeneficiarioOptions() {
-        try {
-            let response = await fetch(`https://edificad-production.up.railway.app/api/beneficiario`, {
-                method: "GET",
-                headers: {
-                    Accept: 'application/json',
-                    Authorization: APIToken,
-                }
-            });
-            if (response.ok) {
-                let data = await response.json();
-                setBeneficiarioOptions(data);
-            } else {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar opções de cesta:', error);
-        }
+        let data = await handleGet(API_URL_BENEFICIARIO, APIToken);
+        setBeneficiarioOptions(data);
     }
     
     const handleBeneficiarioChange = (event: React.ChangeEvent<{}>, value: Beneficiario | null) => {
