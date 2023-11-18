@@ -6,7 +6,7 @@ import Modal from '@mui/material/Modal';
 import 'reactjs-popup/dist/index.css';
 import {TextField} from '@mui/material';
 import {useEffect, useState} from 'react';
-import {handleGet, handlePost, handlePut} from "../commons/Requests";
+import {handleDelete, handleGet, handlePost, handlePut} from "../commons/Requests";
 import {
     Beneficiario,
     Cesta,
@@ -45,6 +45,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [formData, setFormData] = useState<DistribuicaoFormData>(emptyFormData);
     const [openModal, setOpenModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false);
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [controleCestaToDelete, setControleCestaToDelete] = useState<DistribuicaoCesta>();
 
     async function loadDefaultDistribuicaoCesta() {
         let data = await handleGet(API_URL_DIST_CESTA, APIToken);
@@ -139,10 +141,6 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         handleOpenEditModal(controle);
     }
 
-    function handleDeleteControle(controle: DistribuicaoCesta){
-
-    }
-
     const handleOpenEditModal = (controle: DistribuicaoCesta) => {
         loadCestas();
         loadBeneficiarios();
@@ -171,6 +169,28 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
 
         setFormData(emptyFormData);
     };
+
+    //deletando
+
+    function handleOpenDeleteControle(controle: DistribuicaoCesta){
+        setControleCestaToDelete(controle)
+        setOpenDeleteModal(true)
+    }
+
+    function handleCloseModalDeleteControle(){
+        setOpenDeleteModal(false)
+    }
+
+
+    async function handleConfirmarExclusaoControleCesta(){
+        const successDelete = (response) => {
+            setOpenDeleteModal(false)
+            loadDefaultDistribuicaoCesta();
+            loadResumoDistribuicaoCestas();
+        }
+
+        await handleDelete(`${API_URL_DIST_CESTA}/${controleCestaToDelete?.id}`, APIToken, successDelete, (response) => {})
+    }
 
 
     return (
@@ -353,9 +373,30 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                                     </div>
                                 </Modal>
 
-                                <button onClick={() => handleDeleteControle(controle)}>
+                                <button onClick={() => handleOpenDeleteControle(controle)}>
                                     <DeleteIcon className='text-red-500'></DeleteIcon>
                                 </button>
+                                <Modal open={openDeleteModal} onClose={handleCloseModalDeleteControle}
+                                       className="d-flex align-items-center justify-content-center">
+                                    <div className='p-4 flex flex-col items-center bg-white w-50'>
+                                        <div className='modal-dialog w-100'>
+                                            <div className="modal-content">
+                                                <div className="modal-header border-bottom">
+                                                    <h1 className="modal-title fs-5">Confirmação de Exclusão</h1>
+                                                    <button className="btn-close" onClick={handleCloseModalDeleteControle}></button>
+                                                </div>
+                                                <div className="modal-body mt-3">
+                                                    Confirmar exclusão do controle de cesta?
+                                                </div>
+                                                <div className="modal-footer mt-5">
+                                                    <button className="btn btn-secondary mr-2" onClick={handleCloseModalDeleteControle}>Cancelar</button>
+                                                    <button className="btn btn-primary" onClick={handleConfirmarExclusaoControleCesta}>Confirmar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Modal>
+
                             </td>
                             <td>{controle.cesta.nome}</td>
                             <td>{controle.beneficiario.nome}</td>
