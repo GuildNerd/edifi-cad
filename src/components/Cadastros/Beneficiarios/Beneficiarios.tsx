@@ -353,8 +353,7 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                         <th></th>
                         <th>CPF</th>
                         <th>Nome</th>
-                        <th>Telefone</th>
-                        <th>Email</th>
+                        <th>Contato</th>
                         <th>Dependentes</th>
                         <th>Endereço</th>
                     </tr>
@@ -362,8 +361,8 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                     <tbody>
                     {
                         entityList.map((beneficiario, index) =>
-                            <tr className='text-sm' key={index}>
-                                <td className="d-flex">
+                            <tr key={index}>
+                                <td style={{ width: '70px' }}>
                                     <button onClick={() => handleEditBeneficiario(beneficiario)}>
                                         <EditIcon className='text-baby-blue'></EditIcon>
                                     </button>
@@ -527,8 +526,11 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                                 </td>
                                 <td>{beneficiario.cpf}</td>
                                 <td>{beneficiario.nome}</td>
-                                <td>{beneficiario.telefone}</td>
-                                <td>{beneficiario.email}</td>
+                                <td>
+                                    <div className="phone">{beneficiario.telefone}</div>
+                                    <div className="phone">{beneficiario.email}</div>
+                                </td>
+
                                 <td>
                                     {
                                         beneficiario.dependentes != undefined && beneficiario.dependentes.length > 0 ?
