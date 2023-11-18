@@ -10,7 +10,7 @@ import {useEffect, useState} from 'react';
 import {handleGet, handlePost} from "../commons/Requests";
 import {Beneficiario, Cesta, DistribuicaoCesta, DistribuicaoFormData} from './ControleCestasTypes'
 import {Voluntario} from '../Cadastros/Voluntarios/VoluntariosTypes'
-import {formatDate} from '../commons/Utils'
+import {formatDate, formatDateISO} from '../commons/Utils'
 import {API_URL_BENEFICIARIO, API_URL_CESTA, API_URL_DIST_CESTA, API_URL_VOLUNTARIO} from "../../apiConfig";
 
 interface ControleCestasProps {
@@ -83,7 +83,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             handleCloseModal();
         }
 
-        const errorSubmit = (resp) => { }
+        const errorSubmit = (resp) => {
+        }
 
         await handlePost(API_URL_DIST_CESTA, dataToSend, APIToken, successSubmit, errorSubmit)
     }
@@ -224,24 +225,28 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                     </Modal>
                 </div>
             </div>
-            <div className='mt-4'>
-                <table className='rounded-sm bg-white'>
-                    <tr>
-                        <th className='px-2'>Cesta</th>
-                        <th className='px-2'>Recebido por</th>
-                        <th className='px-2'>Voluntário responsável</th>
-                        <th className='px-2'>Entrega</th>
-                    </tr>
-                    {
-                        controleCestasList.map((controle, index) =>
-                            <tr className='text-sm'>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.cesta.nome}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.beneficiario.nome}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.voluntario.nome}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{controle.data_hora.toLocaleString("pt-BR")}</td>
-                            </tr>
-                        )
-                    }
+            <div className='mt-4 w-75'>
+                <table className='table table-striped'>
+                    <thead>
+                        <tr>
+                            <th className='px-2'>Cesta</th>
+                            <th className='px-2'>Recebido por</th>
+                            <th className='px-2'>Voluntário responsável</th>
+                            <th className='px-2'>Entrega</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {controleCestasList.map((controle, index) =>
+                                <tr key={controle.id}>
+                                    <td>{controle.cesta.nome}</td>
+                                    <td>{controle.beneficiario.nome}</td>
+                                    <td>{controle.voluntario.nome}</td>
+                                    <td>{formatDateISO(controle.data_hora)}</td>
+                                </tr>
+                            )
+                        }
+                    </tbody>
+
                 </table>
             </div>
         </div>

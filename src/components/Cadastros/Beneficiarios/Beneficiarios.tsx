@@ -98,7 +98,8 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
             setEntityToDelete(emptyBeneficiarioPost);
         }
 
-        await handlePost(API_URL_BENEFICIARIO, newEntity, APIToken, successAdd, () => {});
+        await handlePost(API_URL_BENEFICIARIO, newEntity, APIToken, successAdd, () => {
+        });
     };
 
     // editando beneficiario
@@ -114,7 +115,8 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
             setOpenPopupUpdate(false);
         }
 
-        await handlePut(API_URL_BENEFICIARIO, newEntity, APIToken, successUpdate, () => {})
+        await handlePut(API_URL_BENEFICIARIO, newEntity, APIToken, successUpdate, () => {
+        })
     };
 
     // removendo beneficiario
@@ -135,7 +137,8 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                 loadDefaultEntities();
                 setConfirmDelete(false);
             }
-            await handleDelete(url,  APIToken, successDelete, () => {})
+            await handleDelete(url, APIToken, successDelete, () => {
+            })
         }
     };
 
@@ -344,23 +347,23 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                 </div>
             </div>
             <div className='mt-4'>
-                <table className='rounded-sm bg-white'>
+                <table className='table table-striped'>
                     <thead>
                     <tr className='text-center'>
                         <th></th>
-                        <th className='px-2'>CPF</th>
-                        <th className='px-2'>Nome</th>
-                        <th className='px-2'>Telefone</th>
-                        <th className='px-2'>Email</th>
-                        <th className='px-2'>Endereço</th>
-                        <th className='px-2'>Dependentes</th>
+                        <th>CPF</th>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>Email</th>
+                        <th>Dependentes</th>
+                        <th>Endereço</th>
                     </tr>
                     </thead>
                     <tbody>
                     {
                         entityList.map((beneficiario, index) =>
                             <tr className='text-sm' key={index}>
-                                <td className='px-2 border-[1px] border-gray-600'>
+                                <td className="d-flex">
                                     <button onClick={() => handleEditBeneficiario(beneficiario)}>
                                         <EditIcon className='text-baby-blue'></EditIcon>
                                     </button>
@@ -522,34 +525,34 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                                         <DeleteIcon className='text-red-500'></DeleteIcon>
                                     </button>
                                 </td>
-                                <td className='px-2 border-[1px] border-gray-600'>{beneficiario.cpf}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{beneficiario.nome}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{beneficiario.telefone}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{beneficiario.email}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{`${beneficiario.endereco?.logradouro}, ${beneficiario.endereco?.numero}, ${beneficiario.endereco?.bairro}, ${beneficiario.endereco?.cidade} - ${beneficiario.endereco?.estado}, ${beneficiario.endereco?.cep}`}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>
+                                <td>{beneficiario.cpf}</td>
+                                <td>{beneficiario.nome}</td>
+                                <td>{beneficiario.telefone}</td>
+                                <td>{beneficiario.email}</td>
+                                <td>
                                     {
                                         beneficiario.dependentes != undefined && beneficiario.dependentes.length > 0 ?
-                                            <Popup trigger={<button className='font-bold'><VisibilityIcon className='mr-2' />Exibir</button>} position="right center" modal>
-                                                <table className='rounded-sm bg-white'>
+                                            <Popup trigger={<button className='font-bold'><VisibilityIcon
+                                                className='mr-2'/>Exibir</button>} position="right center" modal>
+                                                <table className='table table-striped'>
                                                     <thead>
                                                     <tr className='text-center'>
-                                                        <th className='px-2'>CPF</th>
-                                                        <th className='px-2'>Nome</th>
-                                                        <th className='px-2'>Data de nascimento</th>
-                                                        <th className='px-2'>Telefone</th>
-                                                        <th className='px-2'>Email</th>
+                                                        <th>CPF</th>
+                                                        <th>Nome</th>
+                                                        <th>Data de nascimento</th>
+                                                        <th>Telefone</th>
+                                                        <th>Email</th>
                                                     </tr>
                                                     </thead>
                                                     <tbody>
                                                     {
                                                         beneficiario.dependentes.map((dependente, index) =>
                                                             <tr className='text-sm' key={index}>
-                                                                <td className='px-2 border-[1px] border-gray-600'>{dependente.cpf}</td>
-                                                                <td className='px-2 border-[1px] border-gray-600'>{dependente.nome}</td>
-                                                                <td className='px-2 border-[1px] border-gray-600'>{dependente.data_nascimento}</td>
-                                                                <td className='px-2 border-[1px] border-gray-600'>{dependente.telefone}</td>
-                                                                <td className='px-2 border-[1px] border-gray-600'>{dependente.email}</td>
+                                                                <td>{dependente.cpf}</td>
+                                                                <td>{dependente.nome}</td>
+                                                                <td>{dependente.data_nascimento}</td>
+                                                                <td>{dependente.telefone}</td>
+                                                                <td>{dependente.email}</td>
                                                             </tr>
                                                         )
                                                     }
@@ -561,6 +564,8 @@ export default function Beneficiarios({APIToken}: BeneficiarioProps) {
                                             <p>Não possui</p>
                                     }
                                 </td>
+                                <td>{`${beneficiario.endereco?.logradouro}, ${beneficiario.endereco?.numero}, ${beneficiario.endereco?.bairro}, ${beneficiario.endereco?.cidade} - ${beneficiario.endereco?.estado}, ${beneficiario.endereco?.cep}`}</td>
+
                             </tr>
                         )
                     }

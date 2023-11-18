@@ -335,22 +335,22 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
                 </div>
             </div>
             <div className='mt-4'>
-                <table className='rounded-sm bg-white'>
+                <table className='table table-striped'>
                     <thead>
                     <tr className='text-center'>
                         <th></th>
-                        <th className='px-2'>CPF</th>
-                        <th className='px-2'>Nome</th>
-                        <th className='px-2'>Telefone</th>
-                        <th className='px-2'>Email</th>
-                        <th className='px-2'>Endereço</th>
+                        <th >CPF</th>
+                        <th >Nome</th>
+                        <th >Telefone</th>
+                        <th >Email</th>
+                        <th >Endereço</th>
                     </tr>
                     </thead>
                     <tbody>
                     {
                         voluntariosList.map((voluntario, index) =>
-                            <tr className='text-sm' key={index}>
-                                <td className='px-2 border-[1px] border-gray-600'>
+                            <tr key={voluntario.id}>
+                                <td className='px-2'>
                                     <button onClick={() => handleEditVoluntario(voluntario)}>
                                         <EditIcon className='text-baby-blue'></EditIcon>
                                     </button>
@@ -512,11 +512,11 @@ export default function Voluntarios({APIToken}: VoluntariosProps) {
                                         <DeleteIcon className='text-red-500'></DeleteIcon>
                                     </button>
                                 </td>
-                                <td className='px-2 border-[1px] border-gray-600'>{voluntario.cpf}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{voluntario.nome}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{voluntario.telefone}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{voluntario.email}</td>
-                                <td className='px-2 border-[1px] border-gray-600'>{`${voluntario.endereco?.logradouro}, ${voluntario.endereco?.numero}, ${voluntario.endereco?.bairro}, ${voluntario.endereco?.cidade} - ${voluntario.endereco?.estado}, ${voluntario.endereco?.cep}`}</td>
+                                <td >{voluntario.cpf}</td>
+                                <td >{voluntario.nome}</td>
+                                <td >{voluntario.telefone}</td>
+                                <td >{voluntario.email}</td>
+                                <td >{`${voluntario.endereco?.logradouro}, ${voluntario.endereco?.numero}, ${voluntario.endereco?.bairro}, ${voluntario.endereco?.cidade} - ${voluntario.endereco?.estado}, ${voluntario.endereco?.cep}`}</td>
                             </tr>
                         )
                     }
