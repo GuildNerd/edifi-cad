@@ -1,3 +1,4 @@
+import {currentDateTimeStr} from '../commons/Utils'
 
 export type DistribuicaoCesta = {
     id:number,
@@ -54,6 +55,7 @@ export type Cesta = {
 
 
 export type DistribuicaoFormData = {
+    id: number,
     data_hora: Date,
     id_cesta : number,
     id_voluntario : number,
@@ -71,9 +73,10 @@ export const emptyResumo: ResumoDistribuicao = {
 }
 
 export const emptyFormData: DistribuicaoFormData = {
+    id: 0,
     id_cesta: 0,
     id_beneficiario: 0,
     id_voluntario: 0,
-    data_hora: new Date()
+    data_hora: new Date(currentDateTimeStr())
 }
 

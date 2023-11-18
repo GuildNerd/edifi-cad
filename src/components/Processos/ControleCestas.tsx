@@ -6,7 +6,6 @@ import Modal from '@mui/material/Modal';
 import 'reactjs-popup/dist/index.css';
 import {TextField} from '@mui/material';
 import {useEffect, useState} from 'react';
-
 import {handleGet, handlePost, handlePut} from "../commons/Requests";
 import {
     Beneficiario,
@@ -18,7 +17,7 @@ import {
     ResumoDistribuicao
 } from './ControleCestasTypes'
 import {Voluntario} from '../Cadastros/Voluntarios/VoluntariosTypes'
-import {formatDate, formatDateISO} from '../commons/Utils'
+import {currentDateTime, currentDateTimeStr, formatDate, formatDateISO} from '../commons/Utils'
 import {
     API_URL_BENEFICIARIO,
     API_URL_CESTA,
@@ -81,8 +80,9 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         }
     }, [isLoadDefault])
 
-    function getJsonToSendAPI(_formData: DistribuicaoFormData){
+    function getJsonToSendAPI(_formData: DistribuicaoFormData) {
         return {
+            id: _formData.id,
             cesta: {id: _formData.id_cesta},
             voluntario: {id: _formData.id_voluntario},
             beneficiario: {id: _formData.id_beneficiario},
@@ -96,8 +96,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             handleCloseModal();
         }
 
-        const errorSubmit = (resp) => {
-        }
+        const errorSubmit = (resp) => { }
         await handlePost(API_URL_DIST_CESTA, getJsonToSendAPI(formData), APIToken, successSubmit, errorSubmit)
     }
 
@@ -106,6 +105,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         loadCestas();
         loadBeneficiarios();
         loadVoluntarios();
+
+        formData.data_hora = currentDateTime();
     };
 
     const handleCloseModal = () => {
@@ -143,11 +144,15 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     }
 
     const handleOpenEditModal = (controle: DistribuicaoCesta) => {
+        loadCestas();
+        loadBeneficiarios();
+        loadVoluntarios();
         setFormData({
+            id: controle.id,
             id_cesta: controle.cesta.id,
             id_beneficiario: controle.beneficiario.id,
             id_voluntario: controle.voluntario.id,
-            data_hora: controle.data_hora
+            data_hora: new Date(controle.data_hora)
         });
         setOpenEditModal(true);
     };
@@ -163,6 +168,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             handleCloseEditModal();
         }
         await handlePut(API_URL_DIST_CESTA, getJsonToSendAPI(formData)  , APIToken, successUpdate, (resp) => {} )
+
+        setFormData(emptyFormData);
     };
 
 
@@ -239,13 +246,10 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                                                         label="Registro"
                                                         type="datetime-local"
                                                         className="col-12"
-
-                                                        defaultValue={formData.data_hora.toISOString().slice(0, 16)}
+                                                        value={currentDateTimeStr()}
+                                                        defaultValue={currentDateTimeStr()}
                                                         InputLabelProps={{shrink: true}}
-                                                        onChange={(e) => setFormData({
-                                                            ...formData,
-                                                            data_hora: new Date(e.target.value)
-                                                        })}
+                                                        onChange={(e) => formData.data_hora = new Date(e.target.value)}
                                                     />
                                                 </div>
 
@@ -282,6 +286,72 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                                 <button onClick={() => handleEditarControle(controle)}>
                                     <EditIcon className='text-baby-blue'></EditIcon>
                                 </button>
+
+                                <Modal open={openEditModal} onClose={handleCloseEditModal}
+                                       className="d-flex align-items-center justify-content-center">
+                                    <div className='p-4 flex flex-col items-center bg-white w-50'>
+                                        <div className='modal-dialog w-100'>
+                                            <div className="modal-content">
+                                                <div className="modal-header">
+                                                    <h1 className="modal-title fs-5">Atualizar Registro</h1>
+                                                    <button className="btn-close" onClick={handleCloseEditModal}></button>
+                                                </div>
+                                                <div className="modal-body mt-3">
+                                                    <form>
+                                                        <div className="row g-3">
+                                                            <Autocomplete
+                                                                id="beneficiario-autocomplete"
+                                                                className="col-6"
+                                                                options={beneficiarioOptions}
+                                                                value={beneficiarioOptions.find(option => option.id === formData.id_beneficiario )}
+                                                                getOptionLabel={(option) => option.nome}
+                                                                onChange={(event, value) => formData.id_beneficiario = value?.id as number}
+                                                                renderInput={(params) =>
+                                                                    <TextField {...params} label="Beneficiário"/>}/>
+
+                                                            <Autocomplete
+                                                                id="cesta"
+                                                                className="col-6"
+                                                                options={cestaOptions}
+                                                                value={cestaOptions.find(option => option.id === formData.id_cesta)}
+                                                                getOptionLabel={(option) => option.nome}
+                                                                onChange={(event, value) => formData.id_cesta = value?.id as number}
+                                                                renderInput={(params) =>
+                                                                    <TextField {...params} label="Cesta"/>}/>
+
+                                                            <Autocomplete
+                                                                id="voluntario-autocomplete"
+                                                                className="col-6"
+                                                                options={voluntarios}
+                                                                value={voluntarios.find(option => option.id === formData.id_voluntario)}
+                                                                getOptionLabel={(option) => option.nome}
+                                                                onChange={(event, value) => formData.id_voluntario = value?.id as number}
+                                                                renderInput={(params) =>
+                                                                    <TextField {...params} label="Voluntarios"/>}/>
+
+                                                            <div className="col-6">
+                                                                <TextField
+                                                                    id="data_hora"
+                                                                    label="Registro"
+                                                                    type="datetime-local"
+                                                                    className="col-12"
+                                                                    defaultValue={formatDate(formData.data_hora)}
+                                                                    InputLabelProps={{shrink: true}}
+                                                                    onChange={(e) => setFormData({...formData, data_hora: new Date(e.target.value) })}
+                                                                />
+                                                            </div>
+
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div className="modal-footer mt-5">
+                                                    <button className="btn btn-secondary mr-2" onClick={handleCloseEditModal}>Cancelar</button>
+                                                    <button className="btn btn-primary" onClick={handleEditSubmit}>Confirmar</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Modal>
 
                                 <button onClick={() => handleDeleteControle(controle)}>
                                     <DeleteIcon className='text-red-500'></DeleteIcon>
