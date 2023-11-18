@@ -1,5 +1,4 @@
 
-
 export const handleGet = async (url: string, APIToken: string) => {
     try {
         let response = await fetch(url, {
