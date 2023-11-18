@@ -69,3 +69,11 @@ export const emptyResumo: ResumoDistribuicao = {
     cestas_distribuidas: 0,
     beneficiarios_assistidos: 0
 }
+
+export const emptyFormData: DistribuicaoFormData = {
+    id_cesta: 0,
+    id_beneficiario: 0,
+    id_voluntario: 0,
+    data_hora: new Date()
+}
+

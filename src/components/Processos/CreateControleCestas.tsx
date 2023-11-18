@@ -4,18 +4,17 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Modal from '@mui/material/Modal';
 
 import 'reactjs-popup/dist/index.css';
-import {TextField} from '@mui/material';
+import {Button, Grid, TextField} from '@mui/material';
 import {useEffect, useState} from 'react';
 
-import {handleGet, handlePost, handlePut} from "../commons/Requests";
+import {handleGet, handlePost} from "../commons/Requests";
 import {
     Beneficiario,
     Cesta,
     DistribuicaoCesta,
     DistribuicaoFormData,
-    emptyFormData,
-    emptyResumo,
-    ResumoDistribuicao
+    ResumoDistribuicao,
+    emptyResumo
 } from './ControleCestasTypes'
 import {Voluntario} from '../Cadastros/Voluntarios/VoluntariosTypes'
 import {formatDate, formatDateISO} from '../commons/Utils'
@@ -34,7 +33,7 @@ interface ControleCestasProps {
 }
 
 
-export default function ControleCestas({APIToken}: ControleCestasProps) {
+export default function CreateControleCestas({APIToken}: ControleCestasProps) {
     const [inputContent, setInputContent] = useState("");
     const [isLoadDefault, setIsLoadDefault] = useState(true);
 
@@ -43,9 +42,14 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [beneficiarioOptions, setBeneficiarioOptions] = useState<Beneficiario[]>([]);
     const [voluntarios, setVoluntarios] = useState<Voluntario[]>([]);
     const [resumo, setResumo] = useState<ResumoDistribuicao>(emptyResumo)
-    const [formData, setFormData] = useState<DistribuicaoFormData>(emptyFormData);
     const [openModal, setOpenModal] = useState(false);
-    const [openEditModal, setOpenEditModal] = useState(false);
+
+    const [formData, setFormData] = useState<DistribuicaoFormData>({
+        id_cesta: 0,
+        id_beneficiario: 0,
+        id_voluntario: 0,
+        data_hora: new Date()
+    });
 
     async function loadDefaultDistribuicaoCesta() {
         let data = await handleGet(API_URL_DIST_CESTA, APIToken);
@@ -81,16 +85,15 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         }
     }, [isLoadDefault])
 
-    function getJsonToSendAPI(_formData: DistribuicaoFormData){
-        return {
-            cesta: {id: _formData.id_cesta},
-            voluntario: {id: _formData.id_voluntario},
-            beneficiario: {id: _formData.id_beneficiario},
-            data_hora: formatDate(_formData.data_hora)
-        };
-    }
 
     async function handleFormSubmit() {
+        const dataToSend = {
+            cesta: {id: formData.id_cesta},
+            voluntario: {id: formData.id_voluntario},
+            beneficiario: {id: formData.id_beneficiario},
+            data_hora: formatDate(formData.data_hora)
+        };
+
         const successSubmit = (resp) => {
             loadDefaultDistribuicaoCesta();
             handleCloseModal();
@@ -98,7 +101,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
 
         const errorSubmit = (resp) => {
         }
-        await handlePost(API_URL_DIST_CESTA, getJsonToSendAPI(formData), APIToken, successSubmit, errorSubmit)
+        await handlePost(API_URL_DIST_CESTA, dataToSend, APIToken, successSubmit, errorSubmit)
     }
 
     const handleOpenModal = () => {
@@ -135,36 +138,12 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     }
 
     function handleEditarControle(controle: DistribuicaoCesta){
-        handleOpenEditModal(controle);
+
     }
 
     function handleDeleteControle(controle: DistribuicaoCesta){
 
     }
-
-    const handleOpenEditModal = (controle: DistribuicaoCesta) => {
-        setFormData({
-            id_cesta: controle.cesta.id,
-            id_beneficiario: controle.beneficiario.id,
-            id_voluntario: controle.voluntario.id,
-            data_hora: controle.data_hora
-        });
-        setOpenEditModal(true);
-    };
-
-    const handleCloseEditModal = () => {
-        setOpenEditModal(false);
-    };
-
-
-    const handleEditSubmit = async () => {
-        const successUpdate = (response) => {
-            loadDefaultDistribuicaoCesta();
-            handleCloseEditModal();
-        }
-        await handlePut(API_URL_DIST_CESTA, getJsonToSendAPI(formData)  , APIToken, successUpdate, (resp) => {} )
-    };
-
 
     return (
         <div className='h-[100vh] flex flex-col items-center bg-white'>
