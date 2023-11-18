@@ -6,3 +6,4 @@ export const API_URL_BENEFICIARIO: string = `${API_URL}/beneficiario`;
 export const API_URL_DEPENDENTE: string = `${API_URL}/dependente`;
 export const API_URL_CESTA: string = `${API_URL}/cesta`;
 export const API_URL_DIST_CESTA: string = `${API_URL}/distribuicao-cesta`;
+export const API_URL_RELATORIO_RESUMO_DISTRIBUICAO: string = `${API_URL}/relatorios`;

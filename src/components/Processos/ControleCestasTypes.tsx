@@ -59,3 +59,13 @@ export type DistribuicaoFormData = {
     id_voluntario : number,
     id_beneficiario : number
 }
+
+export type ResumoDistribuicao = {
+    cestas_distribuidas: number,
+    beneficiarios_assistidos: number
+}
+
+export const emptyResumo: ResumoDistribuicao = {
+    cestas_distribuidas: 0,
+    beneficiarios_assistidos: 0
+}

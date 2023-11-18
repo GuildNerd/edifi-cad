@@ -8,10 +8,23 @@ import {TextField} from '@mui/material';
 import {useEffect, useState} from 'react';
 
 import {handleGet, handlePost} from "../commons/Requests";
-import {Beneficiario, Cesta, DistribuicaoCesta, DistribuicaoFormData} from './ControleCestasTypes'
+import {
+    Beneficiario,
+    Cesta,
+    DistribuicaoCesta,
+    DistribuicaoFormData,
+    ResumoDistribuicao,
+    emptyResumo
+} from './ControleCestasTypes'
 import {Voluntario} from '../Cadastros/Voluntarios/VoluntariosTypes'
 import {formatDate, formatDateISO} from '../commons/Utils'
-import {API_URL_BENEFICIARIO, API_URL_CESTA, API_URL_DIST_CESTA, API_URL_VOLUNTARIO} from "../../apiConfig";
+import {
+    API_URL_BENEFICIARIO,
+    API_URL_CESTA,
+    API_URL_DIST_CESTA,
+    API_URL_RELATORIO_RESUMO_DISTRIBUICAO,
+    API_URL_VOLUNTARIO
+} from "../../apiConfig";
 
 interface ControleCestasProps {
     APIToken: string
@@ -26,6 +39,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     const [cestaOptions, setCestaOptions] = useState<Cesta[]>([]);
     const [beneficiarioOptions, setBeneficiarioOptions] = useState<Beneficiario[]>([]);
     const [voluntarios, setVoluntarios] = useState<Voluntario[]>([]);
+    const [resumo, setResumo] = useState<ResumoDistribuicao>(emptyResumo)
     const [openPopup, setOpenPopup] = useState(false);
 
     const [formData, setFormData] = useState<DistribuicaoFormData>({
@@ -63,8 +77,10 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
     };
 
     useEffect(() => {
-        if (isLoadDefault)
+        if (isLoadDefault) {
             loadDefaultDistribuicaoCesta();
+            loadResumoDistribuicaoCestas();
+        }
     }, [isLoadDefault])
 
 
@@ -76,8 +92,6 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             data_hora: formatDate(formData.data_hora)
         };
 
-        console.log(dataToSend);
-
         const successSubmit = (resp) => {
             loadDefaultDistribuicaoCesta();
             handleCloseModal();
@@ -85,7 +99,6 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
 
         const errorSubmit = (resp) => {
         }
-
         await handlePost(API_URL_DIST_CESTA, dataToSend, APIToken, successSubmit, errorSubmit)
     }
 
@@ -105,26 +118,21 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
         setCestaOptions(data);
     }
 
-    const handleCestaChange = (value: Cesta | null) => {
-        formData.id_cesta = value?.id as number;
-    };
-
     async function loadBeneficiarios() {
         let data = await handleGet(API_URL_BENEFICIARIO, APIToken);
         setBeneficiarioOptions(data);
     }
 
-    const handleBeneficiarioChange = (value: Beneficiario | null) => {
-        formData.id_beneficiario = value?.id as number;
-    };
 
     async function loadVoluntarios() {
         let data = await handleGet(API_URL_VOLUNTARIO, APIToken);
         setVoluntarios(data);
     }
 
-    function handleVoluntarioChange(value: Voluntario | null) {
-        formData.id_voluntario = value?.id as number;
+    async function loadResumoDistribuicaoCestas() {
+        let urlResumo = `${API_URL_RELATORIO_RESUMO_DISTRIBUICAO}/resumo-distribuicao`;
+        let resumo = await handleGet(urlResumo, APIToken);
+        setResumo(resumo);
     }
 
     return (
@@ -133,8 +141,8 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             <div className='my-4 ml-8 self-start'>
                 <h3 className='text-gray-800 text-xl'>Dados do último mês</h3>
                 <div className='flex justify-center gap-16 text-gray-800'>
-                    <p>Cestas distribuídas: {controleCestasList.length}</p>
-                    <p>Beneficiários assistidos: 28</p>
+                    <p>Cestas distribuídas: {resumo.cestas_distribuidas}</p>
+                    <p>Beneficiários assistidos: {resumo.beneficiarios_assistidos}</p>
                 </div>
             </div>
 
@@ -172,7 +180,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                                                     className="col-6"
                                                     options={beneficiarioOptions}
                                                     getOptionLabel={(option) => option.nome}
-                                                    onChange={(event, value) => handleBeneficiarioChange(value)}
+                                                    onChange={(event, value) => formData.id_beneficiario = value?.id as number}
                                                     renderInput={(params) =>
                                                         <TextField {...params} label="Beneficiário"/>}/>
 
@@ -181,7 +189,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                                                     className="col-6"
                                                     options={cestaOptions}
                                                     getOptionLabel={(option) => option.nome}
-                                                    onChange={(event, value) => handleCestaChange(value)}
+                                                    onChange={(event, value) => formData.id_cesta = value?.id as number}
                                                     renderInput={(params) =>
                                                         <TextField {...params} label="Cesta"/>}/>
 
@@ -190,7 +198,7 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
                                                     className="col-6"
                                                     options={voluntarios}
                                                     getOptionLabel={(option) => option.nome}
-                                                    onChange={(event, value) => handleVoluntarioChange(value)}
+                                                    onChange={(event, value) => formData.id_voluntario = value?.id as number}
                                                     renderInput={(params) =>
                                                         <TextField {...params} label="Voluntarios"/>}/>
 
@@ -228,23 +236,23 @@ export default function ControleCestas({APIToken}: ControleCestasProps) {
             <div className='mt-4 w-75'>
                 <table className='table table-striped'>
                     <thead>
-                        <tr>
-                            <th className='px-2'>Cesta</th>
-                            <th className='px-2'>Recebido por</th>
-                            <th className='px-2'>Voluntário responsável</th>
-                            <th className='px-2'>Entrega</th>
-                        </tr>
+                    <tr>
+                        <th className='px-2'>Cesta</th>
+                        <th className='px-2'>Recebido por</th>
+                        <th className='px-2'>Voluntário responsável</th>
+                        <th className='px-2'>Entrega</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        {controleCestasList.map((controle, index) =>
-                                <tr key={controle.id}>
-                                    <td>{controle.cesta.nome}</td>
-                                    <td>{controle.beneficiario.nome}</td>
-                                    <td>{controle.voluntario.nome}</td>
-                                    <td>{formatDateISO(controle.data_hora)}</td>
-                                </tr>
-                            )
-                        }
+                    {controleCestasList.map((controle, index) =>
+                        <tr key={controle.id}>
+                            <td>{controle.cesta.nome}</td>
+                            <td>{controle.beneficiario.nome}</td>
+                            <td>{controle.voluntario.nome}</td>
+                            <td>{formatDateISO(controle.data_hora)}</td>
+                        </tr>
+                    )
+                    }
                     </tbody>
 
                 </table>
