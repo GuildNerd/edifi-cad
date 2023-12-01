@@ -10,8 +10,9 @@ import {useState, useEffect} from 'react';
 import {Admin, emptyAdmin} from "./AdminTypes";
 import {handleDelete, handleGet, handlePost, handlePut} from "./commons/Requests";
 import {API_URL_ADMIN} from "../apiConfig";
-//--------------
 import Autocomplete from '@mui/material/Autocomplete';
+import {currentDateTimeStr} from "./commons/Utils";
+import Modal from "@mui/material/Modal";
 
 interface AdminProps {
     APIToken: string
@@ -31,13 +32,14 @@ export default function Admins({APIToken}: AdminProps) {
     //const [rolesOptions, setRolesOptions] = useState([""]);
     const [rolesOptions, setRolesOptions] = useState<string []>([]);
     const [selectedRole, setSelectedRole] = useState("");
+    const [openModal, setOpenModal] = useState(false);
 
     async function loadRoles() {
         let urlResumo = `${API_URL_ADMIN}/available-roles`;
         let data = await handleGet(urlResumo, APIToken);
         setRolesOptions(data);
-        
-        setRolesOptions(prevState => [...prevState, selectedRole] )//---------------------------------------------------------------------------
+
+        setRolesOptions(prevState => [...prevState, selectedRole])//---------------------------------------------------------------------------
     }
 
     const handleInputChange = (event: React.FormEvent<HTMLInputElement>) => {
@@ -76,34 +78,27 @@ export default function Admins({APIToken}: AdminProps) {
         setAdminList(response);
     }
 
-    const handleOpenPopup = () => {
-        setOpenPopup(true);
+    const handleOpenModal = () => {
+        setOpenModal(true);
         loadRoles();//-------------------------------------------------------------
     };
 
-    const handleClosePopup = () => {
+    const handleCloseModal = () => {
         setOpenPopup(false);
         setNovoAdmin(emptyAdmin);
     };
 
-    const handleOpenPopupUpdate = () => {
-        setOpenPopupUpdate(true);
-    };
-
-    const handleClosePopupUpdate = () => {
-        setOpenPopupUpdate(false);
-    }
-
     // adicionar admin
-    async function handleAddAdmin() {
+    async function handleFormSubmit() {
         let successAdd = () => {
             loadDefaultAdmin();
-            
+
             setOpenPopup(false);
             setAdminToDelete(emptyAdmin);
         }
 
-        await handlePost(API_URL_ADMIN, novoAdmin, APIToken, successAdd, () => {});
+        await handlePost(API_URL_ADMIN, novoAdmin, APIToken, successAdd, () => {
+        });
     }
 
     // editando admin
@@ -113,12 +108,13 @@ export default function Admins({APIToken}: AdminProps) {
     };
 
 
-    async function handleUpdateAdmin(){
+    async function handleUpdateAdmin() {
         let successUpdate = () => {
             loadDefaultAdmin();
             setOpenPopupUpdate(false);
         }
-        await handlePut(API_URL_ADMIN, novoAdmin, APIToken, successUpdate, () => {})
+        await handlePut(API_URL_ADMIN, novoAdmin, APIToken, successUpdate, () => {
+        })
     }
 
     // removendo admin
@@ -134,22 +130,23 @@ export default function Admins({APIToken}: AdminProps) {
 
     const handleChangeRole = (_role: string | null) => {
         let newRole = {
-            role : _role
+            role: _role
         }
         console.log('role selecionada: ')
-        console.log(_role)
+        console.log(newRole)
 
         emptyAdmin.user_roles.push(newRole);
     }
 
-    async function handleConfirmDelete () {
+    async function handleConfirmDelete() {
         if (adminToDelete) {
             let url = `${API_URL_ADMIN}/${adminToDelete.id}`;
             let successDelete = () => {
                 loadDefaultAdmin();
                 setConfirmDelete(false);
             }
-            await handleDelete(url,  APIToken, successDelete, () => {})
+            await handleDelete(url, APIToken, successDelete, () => {
+            })
         }
     }
 
@@ -184,96 +181,97 @@ export default function Admins({APIToken}: AdminProps) {
                 <div>
                     <button
                         className='py-1 px-2 rounded-md flex items-center align-middle bg-baby-blue border-2 border-baby-blue text-white'
-                        onClick={handleOpenPopup}>
+                        onClick={handleOpenModal}>
                         <AddIcon></AddIcon>
                         Novo usuário
                     </button>
 
-                    <Popup open={openPopup} onClose={handleClosePopup}>
-                        <div className='p-4'>
-                            <h1 className='text-center'>Cadastrando Usuário</h1>
-                            <form>
-                                <div className='mt-2'>
-                                    <h3 className='my-2'>Dados</h3>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <TextField
-                                                label="Nome completo"
-                                                value={novoAdmin.full_name}
-                                                onChange={(e) => setNovoAdmin({
-                                                    ...novoAdmin,
-                                                    full_name: e.target.value
-                                                })}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Usuário"
-                                                value={novoAdmin.username}
-                                                onChange={(e) => setNovoAdmin({
-                                                    ...novoAdmin,
-                                                    username: e.target.value
-                                                })}
-                                                fullWidth
-                                                style={{marginTop: '16px'}}
-                                            />
-                                            
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            <TextField
-                                                label="Email"
-                                                value={novoAdmin.email}
-                                                onChange={(e) => setNovoAdmin({
-                                                    ...novoAdmin,
-                                                    email: e.target.value
-                                                })}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Password"
-                                                type="password"
-                                                value={novoAdmin.password}
-                                                onChange={(e) => setNovoAdmin({
-                                                    ...novoAdmin,
-                                                    password: e.target.value
-                                                })}
-                                                fullWidth
-                                                style={{marginTop: '16px'}}
-                                            />
-                                        </Grid>
-                                    </Grid>
-                                </div>
-                                <div className='mt-4'>
-                                    <h3 className='my-2'>Endereço</h3>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <Autocomplete
-                                                //id="cesta"
-                                                className="col-6"
-                                                options={rolesOptions}
-                                                getOptionLabel={(option) => option}
-                                                onChange={(event, value) => handleChangeRole(value)}
-                                                renderInput={(params) =>
-                                                <TextField {...params} label="Perfil"/>}
-                                            />
-                                        </Grid>
-                                        <Grid item xs={6}>
-                                            
-                                        </Grid>
-                                    </Grid>
-                                </div>
-                                <div className='mt-5 flex justify-around'>
-                                    <Button variant='contained' onClick={handleAddAdmin}>
-                                        Cadastrar
-                                    </Button>
+                    <Modal open={openModal} onClose={handleCloseModal}
+                           className="d-flex align-items-center justify-content-center">
+                        <div className='p-4 flex flex-col items-center bg-white w-50'>
+                            <div className='modal-dialog w-100'>
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <h1 className="modal-title fs-5">Registrar nova distribuição</h1>
+                                        <button className="btn-close" onClick={handleCloseModal}></button>
+                                    </div>
+                                    <div className="modal-body mt-3">
+                                        <form>
+                                            <div className="row g-3">
+                                                <div className="col-6">
+                                                    <TextField
+                                                        className="col-12"
+                                                        label="Nome completo"
+                                                        value={novoAdmin.full_name}
+                                                        onChange={(e) => setNovoAdmin({
+                                                            ...novoAdmin,
+                                                            full_name: e.target.value
+                                                        })}
+                                                    />
+                                                </div>
 
-                                    <Button variant='contained' onClick={handleClosePopup} className='!bg-red-500'>
-                                        Cancelar
-                                    </Button>
+
+                                                <div className="col-6">
+                                                    <TextField
+                                                        className="col-12"
+                                                        label="Usuário"
+                                                        value={novoAdmin.username}
+                                                        onChange={(e) => setNovoAdmin({
+                                                            ...novoAdmin,
+                                                            username: e.target.value
+                                                        })}
+
+                                                    />
+                                                </div>
+
+
+                                                <div className="col-6">
+
+                                                    <TextField
+                                                        className="col-12"
+                                                        label="Email"
+                                                        value={novoAdmin.email}
+                                                        onChange={(e) => setNovoAdmin({
+                                                            ...novoAdmin,
+                                                            email: e.target.value
+                                                        })}
+                                                    />
+                                                </div>
+                                                <div className="col-6">
+                                                    <TextField
+                                                        className="col-12"
+                                                        label="Password"
+                                                        type="password"
+                                                        value={novoAdmin.password}
+                                                        onChange={(e) => setNovoAdmin({
+                                                            ...novoAdmin,
+                                                            password: e.target.value
+                                                        })}
+
+                                                    />
+                                                </div>
+
+                                                <Autocomplete
+                                                    className="col-6"
+                                                    options={rolesOptions}
+                                                    getOptionLabel={(option) => option}
+                                                    onChange={(event, value) => handleChangeRole(value)}
+                                                    renderInput={(params) =>
+                                                        <TextField {...params} label="Perfil"/>}/>
+
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div className="modal-footer mt-5">
+                                        <button className="btn btn-secondary mr-2" onClick={handleCloseModal}>Cancelar
+                                        </button>
+                                        <button className="btn btn-primary" onClick={handleFormSubmit}>Confirmar
+                                        </button>
+                                    </div>
                                 </div>
-                            </form>
+                            </div>
                         </div>
-                    </Popup>    
-
+                    </Modal>
                 </div>
             </div>
             <div className='mt-4 w-100 px-5'>
@@ -281,9 +279,9 @@ export default function Admins({APIToken}: AdminProps) {
                     <thead>
                     <tr className='text-center'>
                         <th></th>
-                        <th >Nome completo</th>
-                        <th >Usuário</th>
-                        <th >Email</th>
+                        <th>Nome completo</th>
+                        <th>Usuário</th>
+                        <th>Email</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -294,14 +292,14 @@ export default function Admins({APIToken}: AdminProps) {
                                     <button onClick={() => handleEditAdmin(admin)}>
                                         <EditIcon className='text-baby-blue'></EditIcon>
                                     </button>
-                                    
+
                                     <button onClick={() => handleDeleteAdmin(admin)}>
                                         <DeleteIcon className='text-red-500'></DeleteIcon>
                                     </button>
                                 </td>
-                                <td >{admin.full_name}</td>
-                                <td >{admin.username}</td>
-                                <td >{admin.email}</td>
+                                <td>{admin.full_name}</td>
+                                <td>{admin.username}</td>
+                                <td>{admin.email}</td>
                             </tr>
                         )
                     }
