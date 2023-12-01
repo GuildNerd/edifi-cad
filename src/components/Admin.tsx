@@ -132,6 +132,16 @@ export default function Admins({APIToken}: AdminProps) {
         setAdminToDelete(emptyAdmin);//verificar---------------------------------------------------------------------------------------------------------
     };
 
+    const handleChangeRole = (_role: string | null) => {
+        let newRole = {
+            role : _role
+        }
+        console.log('role selecionada: ')
+        console.log(_role)
+
+        emptyAdmin.user_roles.push(newRole);
+    }
+
     async function handleConfirmDelete () {
         if (adminToDelete) {
             let url = `${API_URL_ADMIN}/${adminToDelete.id}`;
@@ -241,7 +251,7 @@ export default function Admins({APIToken}: AdminProps) {
                                                 className="col-6"
                                                 options={rolesOptions}
                                                 getOptionLabel={(option) => option}
-                                                onChange={(e) => setSelectedRole(e)}
+                                                onChange={(event, value) => handleChangeRole(value)}
                                                 renderInput={(params) =>
                                                 <TextField {...params} label="Perfil"/>}
                                             />

@@ -22,7 +22,6 @@ export const emptyAdmin  = {
     password: "",
     enabled: true,
     locked: false,
-    //Falta user_roles
-    user_roles: [{role:""}]
+    user_roles: [ {} ]
 };
 
