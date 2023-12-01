@@ -12,6 +12,7 @@ import Beneficiarios from './components/Cadastros/Beneficiarios/Beneficiarios'
 import Cestas from "./components/Cadastros/Cestas/Cestas";
 import Voluntarios from "./components/Cadastros/Voluntarios/Voluntarios";
 import ControleCestas from "./components/Processos/ControleCestas";
+import Admin from "./components/Admin";
 
 function App() {
   const [shownPage, setShownPage] = useState("login");
@@ -63,6 +64,8 @@ function App() {
           shownPage == "voluntarios" ? <Voluntarios APIToken={APIToken}></Voluntarios>
           :
           shownPage == "controleCestas" ? <ControleCestas APIToken={APIToken}></ControleCestas>
+          :
+          shownPage == "admin" ? <Admin APIToken={APIToken}></Admin>
           :
           shownPage == "login" ? <Login handleChangePage={() => handleChangePage("home")} handleSetAPIToken={handleSetAPIToken}></Login>
           :
