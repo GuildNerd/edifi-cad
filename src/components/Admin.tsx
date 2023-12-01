@@ -276,7 +276,7 @@ export default function Admins({APIToken}: AdminProps) {
 
                 </div>
             </div>
-            <div className='mt-4'>
+            <div className='mt-4 w-100 px-5'>
                 <table className='table table-striped'>
                     <thead>
                     <tr className='text-center'>
