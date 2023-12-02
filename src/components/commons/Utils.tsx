@@ -4,6 +4,10 @@ export function formatDate(date: Date){
     return format(date, "yyyy-MM-dd'T'HH:mm:ss")
 }
 
+export function formatOnlyDate(date: Date){
+    return format(date, "yyyy-MM-dd")
+}
+
 export function currentDateTimeStr(){
     return format(new Date(Date.now()), "yyyy-MM-dd'T'HH:mm")
 }

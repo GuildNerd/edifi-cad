@@ -1,3 +1,5 @@
+import { formatOnlyDate } from "../../commons/Utils"
+
 export type Beneficiario = {
     id: number | null,
     nome: string,
@@ -67,4 +69,22 @@ export const emptyBeneficiario = {
         telefone: "",
         data_nascimento: ""
     }]
+}
+
+export type Dependente = {
+    nome: string,
+    email: string,
+    cpf: string,
+    telefone: string,
+    data_nascimento: string,
+    id_responsavel: number | null
+}
+
+export const emptyDependente = {
+    nome: "",
+    email: "",
+    cpf: "",
+    telefone: "",
+    data_nascimento: formatOnlyDate(new Date()),
+    id_responsavel: 0
 }
